@@ -12,6 +12,8 @@ import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 import Simulation from '../components/sim/Simulation';
 import { simularDemo } from '../engine/demo/escenario';
+import HeaderFormat from '../components/headers/HeaderFormat';
+import { ENCABEZADO_IPV4 } from '../engine/demo/encabezado-ipv4';
 
 // Nombres de las capas del modelo OSI (ISO/IEC 7498-1). Cuando exista el catálogo del motor
 // (src/engine/core/capas.ts, pieza 1.2), esta lista se toma de ahí.
@@ -192,6 +194,15 @@ const timelineDemo = simularDemo();
         titulo="Simulación de demostración"
         vistas={['topologia', 'tablas']}
       />
+    </section>
+
+    <section aria-labelledby="formato">
+      <h2 id="formato">Formato</h2>
+      <p class="atenuado">
+        Encabezado IPv4 de 20 bytes según RFC 791 §3.1, sin opciones. Las direcciones son de
+        documentación (RFC 5737) y el checksum lo calcula el motor.
+      </p>
+      <HeaderFormat client:visible encabezado={ENCABEZADO_IPV4} />
     </section>
 
     <section aria-labelledby="layout">
