@@ -1,0 +1,244 @@
+---
+/**
+ * Layout de las páginas del sitio (extiende BaseLayout): enlace para saltar al contenido,
+ * encabezado con el nombre del sitio, navegación principal y el lugar del indicador TTL; menú
+ * de módulos por bloque; y pie con las licencias.
+ *
+ * El menú de módulos es un <details>: en celular se abre y se cierra sin JavaScript; en
+ * escritorio queda siempre abierto como columna lateral (con ::details-content; en los
+ * navegadores que no lo soportan sigue siendo un menú desplegable que funciona igual).
+ */
+import BaseLayout from './BaseLayout.astro';
+import BlockNav from '../components/site/BlockNav.astro';
+import { obtenerModulos } from '../lib/modulos';
+import { ruta } from '../lib/navegacion';
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  noindex?: boolean;
+  /** Muestra el menú de módulos por bloque. El inicio no lo usa: su contenido ya es ese índice. */
+  menu?: boolean;
+}
+
+const { titulo, descripcion, noindex, menu = true } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const modulos = menu ? await obtenerModulos() : [];
+
+const principal = [
+  { texto: 'Inicio', href: ruta(base) },
+  { texto: 'Capas', href: ruta(base, 'capas/') },
+];
+
+const REPOSITORIO = 'https://github.com/frannmv/time-to-learn';
+---
+
+<BaseLayout titulo={titulo} descripcion={descripcion} noindex={noindex}>
+  <a class="saltar" href="#contenido">
+    Saltar al contenido
+  </a>
+
+  <header class="sitio">
+    <div class="sitio-interior">
+      <a class="nombre-sitio" href={ruta(base)}>
+        TimeToLearn · TTL
+      </a>
+      <nav aria-label="Principal">
+        <ul>
+          {principal.map(({ texto, href }) => (
+            <li>
+              <a href={href} aria-current={href === actual ? 'page' : undefined}>
+                {texto}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      {/* Lugar reservado para el indicador de progreso TTL (lo completa la pieza 1.9). */}
+      <div class="progreso-ttl" data-progreso-ttl></div>
+    </div>
+  </header>
+
+  <div class:list={['cuerpo', { 'con-menu': menu }]}>
+    {menu && (
+      <aside class="lateral">
+        <details class="menu-modulos">
+          <summary>Módulos</summary>
+          <p class="titulo-menu" aria-hidden="true">
+            Módulos
+          </p>
+          <BlockNav modulos={modulos} actual={actual} />
+        </details>
+      </aside>
+    )}
+    <main id="contenido">
+      <slot />
+    </main>
+  </div>
+
+  <footer class="pie">
+    <div class="pie-interior">
+      <p>
+        Código bajo licencia <a href={`${REPOSITORIO}/blob/main/LICENSE`}>MIT</a>. Contenido
+        educativo bajo licencia{' '}
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" rel="license">
+          CC BY-SA 4.0
+        </a>
+        .
+      </p>
+      <p>
+        <a href={REPOSITORIO}>Código fuente en GitHub</a>
+      </p>
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  .saltar {
+    position: absolute;
+    inset-inline-start: var(--margen-pagina);
+    inset-block-start: var(--espacio-2);
+    z-index: 1;
+    padding: var(--espacio-2) var(--espacio-3);
+    background-color: var(--color-fondo);
+    border: var(--borde-grueso) solid var(--color-foco);
+    border-radius: var(--radio-chico);
+    transform: translateY(-200%);
+  }
+
+  .saltar:focus {
+    transform: none;
+  }
+
+  .sitio {
+    border-block-end: var(--borde-fino) solid var(--color-borde);
+  }
+
+  .sitio-interior,
+  .pie-interior {
+    max-inline-size: var(--ancho-sitio);
+    margin-inline: auto;
+    padding: var(--espacio-3) var(--margen-pagina);
+  }
+
+  .sitio-interior {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-2) var(--espacio-5);
+  }
+
+  .nombre-sitio {
+    color: var(--color-texto);
+    font-size: var(--texto-lg);
+    font-weight: var(--peso-negrita);
+    text-decoration: none;
+  }
+
+  .sitio ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-4);
+  }
+
+  .sitio nav a {
+    text-decoration: none;
+  }
+
+  .sitio nav a:hover,
+  .sitio nav a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: var(--borde-grueso);
+  }
+
+  .progreso-ttl {
+    margin-inline-start: auto;
+  }
+
+  /* El pie queda abajo aunque la página sea corta. */
+  :global(body) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cuerpo {
+    flex: 1 0 auto;
+    inline-size: 100%;
+    max-inline-size: var(--ancho-sitio);
+    margin-inline: auto;
+    padding: var(--espacio-5) var(--margen-pagina) var(--espacio-7);
+    display: grid;
+    gap: var(--espacio-5);
+  }
+
+  main {
+    min-inline-size: 0;
+  }
+
+  .menu-modulos summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-2);
+    padding: var(--espacio-2) var(--espacio-4);
+    border: var(--borde-fino) solid var(--color-borde);
+    border-radius: var(--radio-medio);
+    background-color: var(--color-superficie);
+    font-weight: var(--peso-semi);
+    cursor: pointer;
+  }
+
+  .menu-modulos summary::after {
+    content: '+';
+    font-weight: var(--peso-negrita);
+  }
+
+  .menu-modulos[open] summary::after {
+    content: '−';
+  }
+
+  .titulo-menu {
+    display: none;
+    margin-block-end: var(--espacio-3);
+    font-weight: var(--peso-semi);
+  }
+
+  .menu-modulos[open] summary {
+    margin-block-end: var(--espacio-3);
+  }
+
+  @media (min-width: 60rem) {
+    .con-menu {
+      grid-template-columns: var(--ancho-menu) minmax(0, 1fr);
+      gap: var(--espacio-7);
+    }
+
+    @supports selector(::details-content) {
+      .menu-modulos summary {
+        display: none;
+      }
+
+      .titulo-menu {
+        display: block;
+      }
+
+      .menu-modulos::details-content {
+        content-visibility: visible;
+      }
+    }
+  }
+
+  .pie {
+    border-block-start: var(--borde-fino) solid var(--color-borde);
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-sm);
+  }
+
+  .pie-interior {
+    display: grid;
+    gap: var(--espacio-1);
+    padding-block: var(--espacio-5);
+  }
+</style>

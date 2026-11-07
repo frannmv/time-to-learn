@@ -4,8 +4,11 @@
  * No se enlaza desde ningún lado y pide no ser indexada. Cada pieza de la etapa le agrega
  * su sección.
  */
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { NOMBRE_CAPA } from '../engine/core/capas';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import LayerBadge from '../components/learn/LayerBadge.astro';
+import ModuleHeader from '../components/learn/ModuleHeader.astro';
+import SourceList from '../components/learn/SourceList.astro';
+import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 
 // Nombres de las capas del modelo OSI (ISO/IEC 7498-1). Cuando exista el catálogo del motor
@@ -41,8 +44,8 @@ const modulos = await obtenerTodosLosModulos();
 const visibles = await obtenerModulos();
 ---
 
-<BaseLayout titulo="Demostración" descripcion="Página interna de desarrollo." noindex>
-  <main>
+<SiteLayout titulo="Demostración" descripcion="Página interna de desarrollo." noindex>
+  <div class="demo">
     <header>
       <h1>Demostración de componentes</h1>
       <p class="atenuado">
@@ -170,11 +173,65 @@ const visibles = await obtenerModulos();
         ))}
       </ul>
     </section>
-  </main>
-</BaseLayout>
+
+    <section aria-labelledby="layout">
+      <h2 id="layout">Layout del sitio</h2>
+      <p class="atenuado">
+        Marcas de capa y encabezado de módulo, con datos de ejemplo. El color de la capa siempre va
+        con su número y su nombre.
+      </p>
+
+      <h3>Marcas de capa</h3>
+      <ul class="fila" aria-label="Marcas de capa">
+        {CAPAS.map((capa) => (
+          <li>
+            <LayerBadge capa={capa} />
+          </li>
+        ))}
+      </ul>
+      <p class="atenuado">Versión compacta (el nombre queda para lectores de pantalla):</p>
+      <ul class="fila" aria-label="Marcas de capa compactas">
+        {CAPAS.map((capa) => (
+          <li>
+            <LayerBadge capa={capa} compacta />
+          </li>
+        ))}
+      </ul>
+
+      <h3>Encabezado de módulo</h3>
+      <div class="muestra-componente" data-testid="demo-encabezado">
+        <ModuleHeader
+          titulo="[Ejemplo] Un módulo con varias capas"
+          descripcion="Encabezado armado con datos de ejemplo para ver todas sus partes."
+          capas={[4, 3]}
+          minutos={15}
+          nivel={4}
+          prerrequisitos={[
+            { titulo: '[Ejemplo] Módulo previo', href: `${import.meta.env.BASE_URL}demo/#layout` },
+          ]}
+        />
+      </div>
+
+      <h3>Fuentes</h3>
+      <div class="muestra-componente">
+        <SourceList
+          fuentes={[
+            {
+              tipo: 'rfc',
+              id: 'RFC 1071',
+              titulo: 'Computing the Internet Checksum',
+              seccion: '§1',
+              url: 'https://www.rfc-editor.org/rfc/rfc1071',
+            },
+          ]}
+        />
+      </div>
+    </section>
+  </div>
+</SiteLayout>
 
 <style>
-  main {
+  .demo {
     max-inline-size: var(--ancho-amplio);
     margin-inline: auto;
     padding: var(--margen-pagina);
@@ -295,6 +352,18 @@ const visibles = await obtenerModulos();
 
   .modulo dd {
     margin: 0;
+  }
+
+  .fila {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2);
+  }
+
+  .muestra-componente {
+    padding: var(--espacio-4);
+    border: var(--borde-fino) dashed var(--color-borde);
+    border-radius: var(--radio-medio);
   }
 
   .radio {

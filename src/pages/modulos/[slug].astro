@@ -1,0 +1,138 @@
+---
+/**
+ * Página de módulo. Sigue la plantilla (LINEAMIENTOS §6): encabezado, cuerpo MDX (idea
+ * central, simulación, formato, qué pasa si, resumen), quiz y fuentes, y al final los enlaces
+ * al módulo anterior y al siguiente.
+ *
+ * Se generan todos los módulos, también los ocultos (para probar la plantilla), pero los
+ * ocultos piden no ser indexados y no tienen anterior ni siguiente.
+ */
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ModuleHeader from '../../components/learn/ModuleHeader.astro';
+import SourceList from '../../components/learn/SourceList.astro';
+import { obtenerModulos, obtenerTodosLosModulos, type Modulo } from '../../lib/modulos';
+import { anteriorSiguiente, rutaModulo } from '../../lib/navegacion';
+
+export const getStaticPaths = (async () => {
+  const todos = await obtenerTodosLosModulos();
+  return todos.map((modulo) => ({ params: { slug: modulo.id }, props: { modulo } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  modulo: Modulo;
+}
+
+const { modulo } = Astro.props;
+const { data } = modulo;
+const base = import.meta.env.BASE_URL;
+const { Content } = await render(modulo);
+
+const todos = await obtenerTodosLosModulos();
+const tituloDe = new Map(todos.map((m) => [m.id, m.data.titulo]));
+const prerrequisitos = data.prerrequisitos.map(({ id }) => ({
+  titulo: tituloDe.get(id) ?? id,
+  href: rutaModulo(base, id),
+}));
+
+const { anterior, siguiente } = anteriorSiguiente(await obtenerModulos(), modulo.id);
+---
+
+<SiteLayout titulo={data.titulo} descripcion={data.descripcion} noindex={data.oculto}>
+  <article class="modulo">
+    <ModuleHeader
+      titulo={data.titulo}
+      descripcion={data.descripcion}
+      capas={data.capas}
+      minutos={data.minutos}
+      prerrequisitos={prerrequisitos}
+    />
+
+    <div class="cuerpo-mdx">
+      <Content />
+    </div>
+
+    {/* Lugar reservado para el Quiz (lo completa la pieza 1.8 con data.quiz). */}
+    <section aria-labelledby="quiz" class="quiz" data-quiz>
+      <h2 id="quiz">Quiz</h2>
+      <p class="atenuado">
+        Este módulo tiene {data.quiz.length} preguntas de repaso. El cuestionario interactivo se
+        agrega en una próxima versión del sitio.
+      </p>
+    </section>
+
+    <SourceList fuentes={data.fuentes} />
+
+    {(anterior || siguiente) && (
+      <nav aria-label="Módulo anterior y siguiente" class="vecinos">
+        {anterior && (
+          <a href={rutaModulo(base, anterior.id)} rel="prev" class="anterior">
+            <span class="atenuado">Anterior</span>
+            <span>{anterior.data.titulo}</span>
+          </a>
+        )}
+        {siguiente && (
+          <a href={rutaModulo(base, siguiente.id)} rel="next" class="siguiente">
+            <span class="atenuado">Siguiente</span>
+            <span>{siguiente.data.titulo}</span>
+          </a>
+        )}
+      </nav>
+    )}
+  </article>
+</SiteLayout>
+
+<style>
+  .modulo {
+    max-inline-size: var(--ancho-lectura);
+    display: grid;
+    gap: var(--espacio-6);
+  }
+
+  .cuerpo-mdx {
+    display: grid;
+    gap: var(--espacio-4);
+  }
+
+  .cuerpo-mdx :global(h2) {
+    margin-block-start: var(--espacio-4);
+  }
+
+  .cuerpo-mdx :global(blockquote) {
+    padding: var(--espacio-3) var(--espacio-4);
+    background-color: var(--color-superficie);
+    border-inline-start: var(--borde-capa) solid var(--color-borde);
+    border-radius: var(--radio-chico);
+  }
+
+  .quiz {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  .atenuado {
+    color: var(--color-texto-atenuado);
+  }
+
+  .vecinos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ancho-columna-min)), 1fr));
+    gap: var(--espacio-3);
+    padding-block-start: var(--espacio-4);
+    border-block-start: var(--borde-fino) solid var(--color-borde);
+  }
+
+  .vecinos a {
+    display: grid;
+    gap: var(--espacio-1);
+    padding: var(--espacio-3) var(--espacio-4);
+    border: var(--borde-fino) solid var(--color-borde);
+    border-radius: var(--radio-medio);
+  }
+
+  .siguiente {
+    grid-column: -2;
+    text-align: end;
+  }
+</style>

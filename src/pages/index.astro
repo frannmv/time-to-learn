@@ -1,33 +1,121 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+/**
+ * Inicio: índice de los módulos visibles, agrupados por bloque y ordenados por `orden`.
+ */
+import SiteLayout from '../layouts/SiteLayout.astro';
+import LayerBadge from '../components/learn/LayerBadge.astro';
+import { obtenerModulos } from '../lib/modulos';
+import { agruparPorBloque, ruta, rutaModulo } from '../lib/navegacion';
+
+const base = import.meta.env.BASE_URL;
+const grupos = agruparPorBloque(await obtenerModulos());
 ---
 
-<BaseLayout>
-  <main>
-    <h1>TimeToLearn · TTL</h1>
-    <p>Un sitio interactivo para ver lo que pasa dentro de una red, capa por capa.</p>
-    <p class="estado">En construcción: el primer módulo llega en la Etapa 2.</p>
-  </main>
-</BaseLayout>
+<SiteLayout menu={false}>
+  <div class="inicio">
+    <header class="portada">
+      <h1>TimeToLearn · TTL</h1>
+      <p>Un sitio interactivo para ver lo que pasa dentro de una red, capa por capa.</p>
+      <p class="atenuado">
+        Los módulos están ordenados por bloque. También podés recorrerlos{' '}
+        <a href={ruta(base, 'capas/')}>por capa del modelo OSI</a>.
+      </p>
+    </header>
+
+    {grupos.length === 0 ? (
+      <p class="vacio" data-testid="indice-vacio">
+        Todavía no hay módulos publicados. El primer módulo llega en la Etapa 2.
+      </p>
+    ) : (
+      grupos.map(({ bloque, modulos }) => {
+        const idBloque = `bloque-${bloque.toLowerCase()}`;
+        return (
+          <section aria-labelledby={idBloque} class="bloque">
+            <h2 id={idBloque}>{bloque}</h2>
+            <ul class="tarjetas">
+              {modulos.map(({ id, data }) => (
+                <li class="tarjeta" data-capa={data.capas[0]}>
+                  <a href={rutaModulo(base, id)} class="titulo">
+                    {data.titulo}
+                  </a>
+                  <p>{data.descripcion}</p>
+                  <p class="datos">
+                    {data.capas.map((capa, i) => (
+                      <LayerBadge capa={capa} principal={data.capas.length > 1 && i === 0} />
+                    ))}
+                    <span class="atenuado">{data.minutos} min</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })
+    )}
+  </div>
+</SiteLayout>
 
 <style>
-  main {
-    min-block-size: 100vh;
-    max-inline-size: var(--ancho-lectura);
+  .inicio {
+    max-inline-size: var(--ancho-amplio);
     margin-inline: auto;
-    padding: var(--margen-pagina);
     display: grid;
-    place-content: center;
-    gap: var(--espacio-4);
-    text-align: center;
+    gap: var(--espacio-6);
   }
 
-  p {
+  .portada {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  .portada p:first-of-type {
     font-size: var(--texto-md);
   }
 
-  .estado {
+  .atenuado {
     color: var(--color-texto-atenuado);
-    font-size: var(--texto-base);
+  }
+
+  .vacio {
+    padding: var(--espacio-5);
+    background-color: var(--color-superficie);
+    border: var(--borde-fino) dashed var(--color-borde);
+    border-radius: var(--radio-medio);
+    text-align: center;
+  }
+
+  .bloque {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  .tarjetas {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--ancho-columna-min)), 1fr));
+    gap: var(--espacio-3);
+  }
+
+  .tarjeta {
+    display: grid;
+    gap: var(--espacio-2);
+    align-content: start;
+    padding: var(--espacio-3) var(--espacio-4);
+    background-color: var(--color-superficie);
+    border-inline-start: var(--borde-capa) solid var(--capa-borde);
+    border-radius: var(--radio-medio);
+  }
+
+  .titulo {
+    font-size: var(--texto-md);
+    font-weight: var(--peso-negrita);
+  }
+
+  .datos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-2);
   }
 </style>
