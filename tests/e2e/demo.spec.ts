@@ -10,6 +10,7 @@ import { hidratarTodas, revisarAccesibilidad, sinScrollHorizontal } from './ayud
 /** Secciones de /demo/ que tienen algo interactivo, en el orden de la página. */
 const SECCIONES_CON_FOCO = [
   'simulacion',
+  'pila',
   'formato',
   'que-pasa-si',
   'quiz',
@@ -33,7 +34,7 @@ interface Parada {
  * Recorre la página con Tab desde el principio y anota cada elemento que recibe el foco.
  * Termina cuando el foco sale de la página o vuelve a un elemento ya visitado.
  */
-async function recorrerConTab(page: Page, maximo = 250): Promise<Parada[]> {
+async function recorrerConTab(page: Page, maximo = 300): Promise<Parada[]> {
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   const paradas: Parada[] = [];
   for (let i = 0; i < maximo; i++) {
@@ -93,6 +94,17 @@ test.describe('recorrido de /demo/ con teclado', () => {
     await simulacion.getByRole('button', { name: 'Siguiente' }).focus();
     await page.keyboard.press('Enter');
     await expect(simulacion.getByText(/^Paso 2 de \d+$/)).toBeVisible();
+
+    // Pila de protocolos: → baja la PDU de capa; con el foco en el diagrama, las flechas lo
+    // desplazan y no cambian de paso.
+    const pila = page.getByRole('region', { name: 'Simulación de la pila de protocolos' });
+    const marca = pila.locator('[data-marca="pdu"]');
+    await pila.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(marca).toHaveAttribute('data-en', 'a:3');
+    await pila.getByRole('region', { name: 'Diagrama de la pila de protocolos' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(marca).toHaveAttribute('data-en', 'a:3');
 
     // Formato: flechas en el selector y Tab hacia los campos.
     const formato = page.getByRole('group', { name: 'Encabezado IPv4' });
