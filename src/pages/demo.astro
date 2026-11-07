@@ -10,6 +10,8 @@ import ModuleHeader from '../components/learn/ModuleHeader.astro';
 import SourceList from '../components/learn/SourceList.astro';
 import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
+import Simulation from '../components/sim/Simulation';
+import { simularDemo } from '../engine/demo/escenario';
 
 // Nombres de las capas del modelo OSI (ISO/IEC 7498-1). Cuando exista el catálogo del motor
 // (src/engine/core/capas.ts, pieza 1.2), esta lista se toma de ahí.
@@ -32,6 +34,7 @@ const semanticos = [
   { token: '--color-foco', uso: 'Indicador de foco y enlaces' },
   { token: '--color-correcto', uso: 'Respuesta correcta' },
   { token: '--color-incorrecto', uso: 'Respuesta incorrecta' },
+  { token: '--color-resaltado-fondo', uso: 'Lo que cambió en el paso actual' },
 ];
 
 const tamanos = ['xs', 'sm', 'base', 'md', 'lg', 'xl', '2xl'];
@@ -42,6 +45,9 @@ const duraciones = ['rapida', 'media', 'lenta'];
 // Pieza 1.3: pasar por la colección valida todos los módulos en el build.
 const modulos = await obtenerTodosLosModulos();
 const visibles = await obtenerModulos();
+
+// Pieza 1.5: la línea de tiempo se calcula en el build y llega como props a la isla.
+const timelineDemo = simularDemo();
 ---
 
 <SiteLayout titulo="Demostración" descripcion="Página interna de desarrollo." noindex>
@@ -172,6 +178,19 @@ const visibles = await obtenerModulos();
           </li>
         ))}
       </ul>
+    </section>
+    <section aria-labelledby="simulacion">
+      <h2 id="simulacion">Simulación</h2>
+      <p class="atenuado">
+        Escenario ficticio de tres nodos (A, B y C): no representa ningún protocolo real. Sirve para
+        probar los controles de paso y la tabla de estado.
+      </p>
+      <Simulation
+        client:visible
+        timeline={timelineDemo}
+        titulo="Simulación de demostración"
+        vistas={['tablas']}
+      />
     </section>
 
     <section aria-labelledby="layout">

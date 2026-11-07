@@ -31,6 +31,8 @@
  * contraste no-texto: --color-borde sobre --color-superficie
  * contraste no-texto: --color-foco sobre --color-fondo
  * contraste no-texto: --color-foco sobre --color-superficie
+ * contraste texto: --color-texto sobre --color-resaltado-fondo
+ * contraste no-texto: --color-foco sobre --color-resaltado-fondo
  * contraste texto: --color-texto sobre --capa-N-fondo
  * contraste texto: --color-texto-atenuado sobre --capa-N-fondo
  * contraste texto: --capa-N-borde sobre --capa-N-fondo
@@ -51,6 +53,8 @@
   --color-foco: #1d4ed8;
   --color-correcto: #17743a;
   --color-incorrecto: #c0262d;
+  /* Fondo de lo que cambió en el paso actual (filas nuevas de una tabla de estado). */
+  --color-resaltado-fondo: #fff3c4;
 
   /*
    * ── Colores por capa OSI (tema claro) ──
@@ -148,6 +152,7 @@
     --color-foco: #7eaaff;
     --color-correcto: #5fcf80;
     --color-incorrecto: #ff7b72;
+    --color-resaltado-fondo: #3a3210;
 
     /* ── Colores por capa OSI (tema oscuro) ── */
     --capa-1-fondo: #3b1716;
