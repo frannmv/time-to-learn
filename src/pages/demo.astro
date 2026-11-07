@@ -22,6 +22,7 @@ import Pdu from '../components/sim/Pdu';
 import { simularPilaDemo } from '../engine/demo/pila';
 import HeaderFormat from '../components/headers/HeaderFormat';
 import { ENCABEZADO_IPV4 } from '../engine/demo/encabezado-ipv4';
+import ModelComparison from '../components/learn/ModelComparison.astro';
 
 // Nombres de las capas del modelo OSI (ISO/IEC 7498-1). Cuando exista el catálogo del motor
 // (src/engine/core/capas.ts, pieza 1.2), esta lista se toma de ahí.
@@ -277,6 +278,22 @@ const recorridoDemo: ModuloRecorrido[] = [
       <div class="muestra-componente" data-testid="pdu-estatica">
         <Pdu paquete={tramaPila} desplazamientos />
       </div>
+    </section>
+
+    <section aria-labelledby="comparacion">
+      <h2 id="comparacion">Comparación de modelos</h2>
+      <p class="atenuado">
+        OSI frente a TCP/IP y a IEEE 802, con el nombre de la PDU en cada capa, sin JavaScript. Los
+        datos son los del motor (ISO/IEC 7498-1, RFC 1122, IEEE Std 802 e IEEE 802.2); la
+        correspondencia entre TCP/IP y OSI es la del apunte de la cátedra.
+      </p>
+      <ModelComparison />
+
+      <h3>Solo OSI y TCP/IP</h3>
+      <p class="atenuado">
+        La misma tabla con menos columnas. Sin la columna IEEE 802, la capa 2 ocupa una sola fila.
+      </p>
+      <ModelComparison id="comparacion-tcpip" columnas={['tcpip', 'pdu-tcpip']} />
     </section>
 
     <section aria-labelledby="formato">

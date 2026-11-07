@@ -11,6 +11,7 @@ import { hidratarTodas, revisarAccesibilidad, sinScrollHorizontal } from './ayud
 const SECCIONES_CON_FOCO = [
   'simulacion',
   'pila',
+  'comparacion',
   'formato',
   'que-pasa-si',
   'quiz',
@@ -115,6 +116,17 @@ test.describe('recorrido de /demo/ con teclado', () => {
     await pila.getByRole('region', { name: 'Diagrama de la pila de protocolos' }).focus();
     await page.keyboard.press('ArrowRight');
     await expect(marca).toHaveAttribute('data-en', 'a:3');
+
+    // Comparación de modelos: sin JavaScript; lo único enfocable es el contenedor de cada
+    // tabla, para desplazarla con las flechas.
+    for (const nombre of [
+      'Comparación de los modelos OSI, TCP/IP e IEEE 802',
+      'Comparación de los modelos OSI y TCP/IP',
+    ]) {
+      const tabla = page.getByRole('region', { name: nombre });
+      await tabla.focus();
+      await expect(tabla).toBeFocused();
+    }
 
     // Formato: flechas en el selector y Tab hacia los campos.
     const formato = page.getByRole('group', { name: 'Encabezado IPv4' });
