@@ -1,0 +1,111 @@
+/*
+ * Estilos globales: reset mínimo, texto base y foco visible.
+ * Todos los valores vienen de tokens.css.
+ */
+
+@import './tokens.css';
+
+/* ── Reset mínimo ── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-inline-size: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── Texto base ── */
+
+body {
+  min-block-size: 100vh;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--fuente-texto);
+  font-size: var(--texto-base);
+  line-height: var(--altura-linea-base);
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--altura-linea-compacta);
+  font-weight: var(--peso-negrita);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--texto-2xl);
+}
+
+h2 {
+  font-size: var(--texto-xl);
+}
+
+h3 {
+  font-size: var(--texto-lg);
+}
+
+h4 {
+  font-size: var(--texto-md);
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-foco);
+  text-underline-offset: var(--subrayado-separacion);
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-sm);
+  line-height: var(--altura-linea-mono);
+}
+
+/* ── Foco visible en todo elemento interactivo ── */
+
+:focus-visible {
+  outline: var(--foco-grosor) solid var(--color-foco);
+  outline-offset: var(--foco-separacion);
+}
+
+/* ── Movimiento reducido ── */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
