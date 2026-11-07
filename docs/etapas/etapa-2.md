@@ -29,10 +29,10 @@ y la última cierra la etapa.
 - [ ] Indicar qué edición de Stallings usa la cátedra y copiar en `fuentes/` los capítulos
       que correspondan a esta etapa (pregunta 5). Hoy `fuentes/` tiene los apuntes de la
       cátedra, pero ningún capítulo de Stallings.
-- [ ] Abrir la issue «futuro» de la pregunta 8 (organizaciones de normalización, topologías y
-      primitivas de servicio).
-- [ ] Crear una issue por pieza en el milestone «Etapa 2», con el título de la pieza y su
-      checklist copiada de este documento.
+- [x] Abrir la issue «futuro» de la pregunta 8 (organizaciones de normalización, topologías y
+      primitivas de servicio): #41.
+- [x] Crear una issue por pieza en el milestone «Etapa 2», con el título de la pieza y su
+      checklist copiada de este documento: #32 (2.1) a #40 (2.9).
 - [ ] Actualizar `main` local (`git pull`) antes de crear cada rama.
 
 ---
