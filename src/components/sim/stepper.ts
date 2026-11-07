@@ -27,7 +27,12 @@ export type AccionStepper =
   /** Reproduce si está en pausa y pausa si se está reproduciendo. */
   | { readonly tipo: 'alternar' }
   /** Avance automático durante la reproducción. Al llegar al final, se detiene. */
-  | { readonly tipo: 'tic' };
+  | { readonly tipo: 'tic' }
+  /**
+   * Empieza de nuevo con otra línea de tiempo (por ejemplo, al elegir otro escenario):
+   * vuelve al paso 0 con la nueva cantidad de pasos y pausa.
+   */
+  | { readonly tipo: 'cargar'; readonly total: number };
 
 export function crearEstado(total: number): EstadoStepper {
   if (!Number.isInteger(total) || total < 1) {
@@ -68,5 +73,7 @@ export function stepper(estado: EstadoStepper, accion: AccionStepper): EstadoSte
       const indice = Math.min(estado.indice + 1, ultimo);
       return con(estado, indice, indice < ultimo);
     }
+    case 'cargar':
+      return crearEstado(accion.total);
   }
 }
