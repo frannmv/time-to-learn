@@ -1,0 +1,153 @@
+---
+/**
+ * Tabla comparativa de los modelos OSI, TCP/IP e IEEE 802, con el nombre de la PDU en cada
+ * capa. Sin JavaScript.
+ *
+ * Una fila por capa OSI, de la 7 a la 1; con la columna IEEE 802, la capa 2 ocupa dos filas
+ * (LLC y MAC). Las capas, los nombres y las PDU salen de `src/engine/osi/modelos.ts`, y la
+ * forma de la tabla, de `filas-comparacion.ts`: este componente solo la dibuja.
+ *
+ * Accesibilidad:
+ * - Cada capa OSI es un encabezado de fila (`<th scope="row">`) con su número, su nombre y su
+ *   color, así que la capa nunca se comunica solo con color.
+ * - Una celda que abarca varias capas OSI dice cuáles en texto para lectores de pantalla: al
+ *   leer la tabla celda por celda solo se anuncia el encabezado de la primera fila.
+ * - En pantallas chicas la tabla se desplaza dentro de su propio contenedor, enfocable y con
+ *   el título de la tabla como nombre, igual que `StateTable`.
+ */
+import LayerBadge from './LayerBadge.astro';
+import {
+  COLUMNAS_COMPARACION,
+  ENCABEZADOS,
+  tablaComparacion,
+  textoCapas,
+  tituloComparacion,
+  type ColumnaComparacion,
+} from './filas-comparacion';
+
+interface Props {
+  /** Columnas que se muestran, además de la de las capas OSI. Por defecto, todas. */
+  columnas?: readonly ColumnaComparacion[];
+  /** Título de la tabla (`<caption>`). Por defecto, según los modelos que se muestran. */
+  titulo?: string;
+  /** Id del título; hace falta uno distinto si hay varias tablas en la misma página. */
+  id?: string;
+}
+
+const {
+  columnas: pedidas = COLUMNAS_COMPARACION,
+  titulo,
+  id = 'comparacion-modelos',
+} = Astro.props;
+const tabla = tablaComparacion(pedidas);
+const idTitulo = `${id}-titulo`;
+const encabezados = [ENCABEZADOS.osi, ...tabla.columnas.map((c) => ENCABEZADOS[c])];
+---
+
+<div
+  class="desplazable"
+  role="region"
+  aria-labelledby={idTitulo}
+  tabindex="0"
+  data-desplazable
+  data-comparacion={id}
+>
+  <table class="tabla">
+    <caption id={idTitulo} class="titulo">
+      {titulo ?? tituloComparacion(tabla.columnas)}
+    </caption>
+    <thead>
+      <tr>
+        {encabezados.map(({ texto, aclaracion }) => (
+          <th scope="col">
+            {texto}
+            {/* El espacio separa los textos al leerlos; los bloques lo esconden en pantalla. */}
+            {aclaracion && ' '}
+            {aclaracion && <span class="secundario">{aclaracion}</span>}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {tabla.filas.map(({ capa, subcapa, encabezado, celdas }) => (
+        <tr data-capa-fila={capa} data-subcapa={subcapa?.sigla}>
+          {encabezado && (
+            <th scope="row" rowspan={encabezado.filas > 1 ? encabezado.filas : undefined}>
+              <LayerBadge capa={capa} />
+            </th>
+          )}
+          {celdas.map(({ columna, texto, detalle, filas, capas, fueraDeAlcance }) => (
+            <td
+              rowspan={filas > 1 ? filas : undefined}
+              class:list={{ fuera: fueraDeAlcance }}
+              data-columna={columna}
+              data-capas={capas.join(' ')}
+            >
+              <span class="principal">{texto}</span>
+              {detalle && ' '}
+              {detalle && <span class="secundario">{detalle}</span>}
+              {capas.length > 1 && ' '}
+              {capas.length > 1 && <span class="solo-lector">({textoCapas(capas)})</span>}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  /*
+   * El desplazamiento horizontal queda dentro de la tabla, nunca en la página. `position`
+   * hace del contenedor el bloque contenedor de los textos `.solo-lector` (posicionados en
+   * absoluto): si no, quedan fuera del recorte y estiran la página.
+   */
+  .desplazable {
+    position: relative;
+    max-inline-size: 100%;
+    overflow-x: auto;
+    border-radius: var(--radio-chico);
+  }
+
+  .tabla {
+    min-inline-size: 100%;
+    border-collapse: collapse;
+    font-size: var(--texto-sm);
+  }
+
+  .titulo {
+    padding-block-end: var(--espacio-2);
+    text-align: start;
+    font-weight: var(--peso-semi);
+  }
+
+  th,
+  td {
+    padding: var(--espacio-2) var(--espacio-3);
+    border: var(--borde-fino) solid var(--color-borde);
+    text-align: start;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  thead th {
+    vertical-align: bottom;
+    background-color: var(--color-superficie);
+  }
+
+  .principal,
+  .secundario {
+    display: block;
+  }
+
+  .secundario {
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-normal);
+  }
+
+  .fuera {
+    color: var(--color-texto-atenuado);
+    font-style: italic;
+  }
+</style>
