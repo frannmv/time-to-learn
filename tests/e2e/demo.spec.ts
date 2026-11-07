@@ -84,13 +84,23 @@ test.describe('recorrido de /demo/ con teclado', () => {
   });
 
   test('cada sección se usa solo con el teclado, de arriba abajo', async ({ page }) => {
-    // Simulación: flechas con el foco en la simulación y Enter en los botones.
+    // Simulación: flechas con el foco en la simulación, el selector de escenarios y Enter en
+    // los botones.
     const simulacion = page.getByRole('region', { name: 'Simulación de demostración' });
     await simulacion.focus();
     await page.keyboard.press('ArrowRight');
     await expect(simulacion.getByText(/^Paso 2 de \d+$/)).toBeVisible();
     await page.keyboard.press('ArrowLeft');
     await expect(simulacion.getByText(/^Paso 1 de \d+$/)).toBeVisible();
+    // Selector de escenarios: dentro del grupo de radio, las flechas cambian de escenario.
+    const entrega = simulacion.getByRole('radio', { name: 'Entrega a C' });
+    await entrega.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(simulacion.getByRole('radio', { name: 'B descarta el mensaje' })).toBeChecked();
+    await expect(simulacion.getByText(/^Paso 1 de 4$/)).toBeVisible();
+    await page.keyboard.press('ArrowLeft');
+    await expect(entrega).toBeChecked();
+    await expect(simulacion.getByText(/^Paso 1 de 6$/)).toBeVisible();
     await simulacion.getByRole('button', { name: 'Siguiente' }).focus();
     await page.keyboard.press('Enter');
     await expect(simulacion.getByText(/^Paso 2 de \d+$/)).toBeVisible();

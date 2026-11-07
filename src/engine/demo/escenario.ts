@@ -6,6 +6,9 @@
  * fila en una tabla. En el último paso, C lee el mensaje en su capa 7 y se ven sus partes
  * con tamaños y una cola. El «encabezado» del mensaje, su cola, los tamaños y la tabla de B
  * son inventados a propósito; ningún módulo del sitio debe usarlos como referencia técnica.
+ *
+ * Tiene una variante más corta, también ficticia, para probar el selector de escenarios
+ * (pieza 2.4): B recibe el mensaje, lo anota y lo descarta en lugar de reenviarlo.
  */
 
 import {
@@ -53,12 +56,9 @@ export const BYTES_COLA_DEMO = 2;
 /** Bytes que ocupa un texto codificado en UTF-8. */
 const bytesUtf8 = (texto: string) => new TextEncoder().encode(texto).length;
 
-/**
- * Corre el escenario ficticio y devuelve su línea de tiempo de seis pasos. Es
- * determinístico: el mismo escenario siempre da la misma timeline.
- */
-export function simularDemo(escenario: EscenarioDemo = ESCENARIO_DEMO): Timeline {
-  const encabezados: Encabezado[] = [
+/** Encabezado del mensaje de juguete (inventado), el mismo en las dos variantes. */
+function encabezadosDemo(escenario: EscenarioDemo): Encabezado[] {
+  return [
     {
       capa: 7,
       nombre: 'Mensaje de juguete (ficticio)',
@@ -69,6 +69,16 @@ export function simularDemo(escenario: EscenarioDemo = ESCENARIO_DEMO): Timeline
       ],
     },
   ];
+}
+
+const tablaVacia = { id: ID_TABLA, titulo: 'Registro de B', nodo: 'b', columnas: COLUMNAS };
+
+/**
+ * Corre el escenario ficticio de demostración y devuelve su línea de tiempo de seis pasos.
+ * Es determinístico: el mismo escenario siempre da la misma timeline.
+ */
+export function simularDemo(escenario: EscenarioDemo = ESCENARIO_DEMO): Timeline {
+  const encabezados = encabezadosDemo(escenario);
   // Último paso: el mismo mensaje, medido parte por parte y con una cola.
   const medido: Paquete = {
     id: ID_MENSAJE,
@@ -87,7 +97,6 @@ export function simularDemo(escenario: EscenarioDemo = ESCENARIO_DEMO): Timeline
     datos: { descripcion: escenario.mensaje, bytes: bytesUtf8(escenario.mensaje) },
   };
   const fila = [escenario.mensaje, 'A', 'C'];
-  const tablaVacia = { id: ID_TABLA, titulo: 'Registro de B', nodo: 'b', columnas: COLUMNAS };
 
   const pasos: Step[] = [
     {
@@ -145,6 +154,57 @@ export function simularDemo(escenario: EscenarioDemo = ESCENARIO_DEMO): Timeline
       paquetes: [medido],
       tablas: [{ ...tablaVacia, filas: [{ celdas: fila }] }],
       resaltados: { nodos: ['c'], enlaces: [] },
+    },
+  ];
+
+  return crearTimeline(escenario.topologia, pasos);
+}
+
+/**
+ * Variante ficticia y más corta del escenario de demostración, de cuatro pasos: el mensaje
+ * llega a B, B lo anota y lo descarta, así que nunca llega a C. Existe para probar el
+ * selector de escenarios con dos líneas de tiempo de distinta longitud. Es determinística.
+ */
+export function simularDescarteDemo(escenario: EscenarioDemo = ESCENARIO_DEMO): Timeline {
+  const encabezados = encabezadosDemo(escenario);
+  const fila = [escenario.mensaje, 'A', 'C'];
+
+  const pasos: Step[] = [
+    {
+      indice: 0,
+      explicacion:
+        'A prepara un mensaje para C. Esta variante también es ficticia: no representa ningún protocolo real.',
+      paquetes: [{ id: ID_MENSAJE, ubicacion: { tipo: 'nodo', nodo: 'a' }, encabezados }],
+      tablas: [{ ...tablaVacia, filas: [] }],
+      resaltados: { nodos: ['a'], enlaces: [] },
+    },
+    {
+      indice: 1,
+      explicacion: 'El mensaje viaja por el enlace de A hacia B.',
+      paquetes: [
+        {
+          id: ID_MENSAJE,
+          ubicacion: { tipo: 'enlace', enlace: 'a-b', desde: 'a', hacia: 'b' },
+          encabezados,
+        },
+      ],
+      tablas: [{ ...tablaVacia, filas: [] }],
+      resaltados: { nodos: [], enlaces: ['a-b'] },
+    },
+    {
+      indice: 2,
+      explicacion: 'B recibe el mensaje y anota en su registro quién lo mandó y para quién es.',
+      paquetes: [{ id: ID_MENSAJE, ubicacion: { tipo: 'nodo', nodo: 'b' }, encabezados }],
+      tablas: [{ ...tablaVacia, filas: [{ celdas: fila, marca: 'nueva' }] }],
+      resaltados: { nodos: ['b'], enlaces: [] },
+    },
+    {
+      indice: 3,
+      explicacion:
+        'B descarta el mensaje en lugar de reenviarlo: C nunca lo recibe. Fin de la variante ficticia.',
+      paquetes: [],
+      tablas: [{ ...tablaVacia, filas: [{ celdas: fila }] }],
+      resaltados: { nodos: ['b'], enlaces: [] },
     },
   ];
 

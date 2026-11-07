@@ -124,4 +124,30 @@ describe('stepper', () => {
       expect(estado).toEqual(en(4));
     });
   });
+
+  describe('cargar', () => {
+    it('con un escenario más corto vuelve al paso 0 aunque el paso actual ya no exista', () => {
+      expect(stepper(en(4), { tipo: 'cargar', total: 3 })).toEqual(en(0, false, 3));
+    });
+
+    it('con un escenario más largo vuelve al paso 0 con el nuevo total', () => {
+      expect(stepper(en(2), { tipo: 'cargar', total: 8 })).toEqual(en(0, false, 8));
+    });
+
+    it('durante la reproducción pausa, y el tic siguiente ya no avanza', () => {
+      const estado = stepper(en(2, true), { tipo: 'cargar', total: 4 });
+      expect(estado).toEqual(en(0, false, 4));
+      expect(stepper(estado, { tipo: 'tic' })).toBe(estado);
+    });
+
+    it('después de cargar, la navegación respeta el nuevo total', () => {
+      let estado = stepper(en(0), { tipo: 'cargar', total: 2 });
+      for (let i = 0; i < 5; i++) estado = stepper(estado, { tipo: 'siguiente' });
+      expect(estado).toEqual(en(1, false, 2));
+    });
+
+    it('rechaza un total inválido, igual que crearEstado', () => {
+      expect(() => stepper(en(1), { tipo: 'cargar', total: 0 })).toThrow(RangeError);
+    });
+  });
 });

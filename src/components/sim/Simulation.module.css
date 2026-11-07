@@ -8,6 +8,45 @@
   background-color: var(--color-fondo);
 }
 
+.escenarios {
+  display: grid;
+  gap: var(--espacio-2);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* El legend de un fieldset no participa de la grilla: se separa con margen. */
+.escenarios legend {
+  margin-block-end: var(--espacio-2);
+  padding: 0;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-semi);
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
+}
+
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  cursor: pointer;
+}
+
+.actual {
+  color: var(--color-texto-atenuado);
+  font-size: var(--texto-sm);
+}
+
+.actual strong {
+  color: var(--color-texto);
+}
+
 .explicacion {
   padding: var(--espacio-3) var(--espacio-4);
   border-inline-start: var(--borde-capa) solid var(--color-foco);
