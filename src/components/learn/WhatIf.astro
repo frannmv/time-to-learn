@@ -1,0 +1,85 @@
+---
+/**
+ * Bloque «¿Qué pasa si…?» (plantilla de módulo, LINEAMIENTOS §6): un escenario de falla o
+ * caso borde. Muestra la pregunta como título, la explicación (el contenido del bloque) y,
+ * opcionalmente, una simulación con su propia línea de tiempo.
+ *
+ * El bloque no carga JavaScript propio; solo la simulación, si la hay, es una isla.
+ *
+ * Uso en MDX:
+ *
+ *   <WhatIf pregunta="¿Qué pasa si…?" timeline={simularCasoBorde()}>
+ *     Explicación del caso.
+ *   </WhatIf>
+ */
+import type { Timeline } from '../../engine/core/timeline';
+import Simulation from '../sim/Simulation';
+
+interface Props {
+  /** La pregunta completa, por ejemplo «¿Qué pasa si el destino es desconocido?». */
+  pregunta: string;
+  /** Línea de tiempo del escenario, calculada en el build por el motor. */
+  timeline?: Timeline;
+  /** Nombre accesible de la simulación. Por defecto, «Simulación: <pregunta>». */
+  tituloSimulacion?: string;
+  /** Nivel del título. Es 3 dentro de la sección «¿Qué pasa si…?» de un módulo. */
+  nivel?: 2 | 3 | 4;
+}
+
+const { pregunta, timeline, tituloSimulacion = `Simulación: ${pregunta}`, nivel = 3 } = Astro.props;
+const Titulo = `h${nivel}` as const;
+---
+
+<section class="que-pasa-si" data-que-pasa-si>
+  <Titulo class="pregunta">
+    <svg
+      class="icono"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17v.01" />
+    </svg>
+    <span>{pregunta}</span>
+  </Titulo>
+  <div class="explicacion">
+    <slot />
+  </div>
+  {timeline && <Simulation client:visible timeline={timeline} titulo={tituloSimulacion} />}
+</section>
+
+<style>
+  .que-pasa-si {
+    display: grid;
+    gap: var(--espacio-3);
+    min-inline-size: 0;
+    padding: var(--espacio-4);
+    border: var(--borde-fino) dashed var(--color-borde);
+    border-radius: var(--radio-medio);
+  }
+
+  .pregunta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--espacio-2);
+  }
+
+  .icono {
+    flex: none;
+    align-self: center;
+    inline-size: var(--espacio-5);
+    block-size: var(--espacio-5);
+    color: var(--color-foco);
+  }
+
+  .explicacion {
+    display: grid;
+    gap: var(--espacio-2);
+  }
+</style>

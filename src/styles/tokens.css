@@ -27,6 +27,10 @@
  * contraste texto: --color-correcto sobre --color-superficie
  * contraste texto: --color-incorrecto sobre --color-fondo
  * contraste texto: --color-incorrecto sobre --color-superficie
+ * contraste texto: --color-advertencia sobre --color-fondo
+ * contraste texto: --color-advertencia sobre --color-superficie
+ * contraste texto: --color-simplificacion sobre --color-fondo
+ * contraste texto: --color-simplificacion sobre --color-superficie
  * contraste no-texto: --color-borde sobre --color-fondo
  * contraste no-texto: --color-borde sobre --color-superficie
  * contraste no-texto: --color-foco sobre --color-fondo
@@ -53,6 +57,9 @@
   --color-foco: #1d4ed8;
   --color-correcto: #17743a;
   --color-incorrecto: #c0262d;
+  /* Recuadros (Callout): título y borde de las advertencias y de las simplificaciones. */
+  --color-advertencia: #8a4b00;
+  --color-simplificacion: #6b3fa0;
   /* Fondo de lo que cambió en el paso actual (filas nuevas de una tabla de estado). */
   --color-resaltado-fondo: #fff3c4;
 
@@ -152,6 +159,8 @@
     --color-foco: #7eaaff;
     --color-correcto: #5fcf80;
     --color-incorrecto: #ff7b72;
+    --color-advertencia: #f2a65a;
+    --color-simplificacion: #c3a6f2;
     --color-resaltado-fondo: #3a3210;
 
     /* ── Colores por capa OSI (tema oscuro) ── */

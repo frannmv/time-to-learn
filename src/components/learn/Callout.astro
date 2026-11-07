@@ -1,0 +1,131 @@
+---
+/**
+ * Recuadro destacado dentro de un módulo. Sin JavaScript.
+ *
+ * Variantes:
+ * - `resumen`: los puntos para repasar al final del módulo (plantilla, LINEAMIENTOS §6).
+ * - `nota`: un comentario al margen.
+ * - `simplificacion`: declara qué simplifica el módulo respecto del estándar, como exige
+ *   CLAUDE.md («Las simplificaciones se declaran»).
+ * - `advertencia`: un error común o algo que suele confundirse.
+ *
+ * Cada variante tiene un título en texto, además del color y el ícono (WCAG 2.2, criterio
+ * 1.4.1): el ícono es decorativo y el título es lo que identifica la variante.
+ */
+export type VarianteCallout = 'resumen' | 'nota' | 'simplificacion' | 'advertencia';
+
+interface Props {
+  variante: VarianteCallout;
+  /** Reemplaza el título por defecto de la variante. */
+  titulo?: string;
+}
+
+const TITULO: Record<VarianteCallout, string> = {
+  resumen: 'Resumen',
+  nota: 'Nota',
+  simplificacion: 'Simplificación',
+  advertencia: 'Advertencia',
+};
+
+const { variante, titulo = TITULO[variante] } = Astro.props;
+---
+
+<div class="callout" data-variante={variante} role="note">
+  <p class="titulo">
+    <svg
+      class="icono"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {variante === 'resumen' && (
+        <>
+          <path d="M9 6h11M9 12h11M9 18h11" />
+          <path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" />
+        </>
+      )}
+      {variante === 'nota' && (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v6M12 7.5v.01" />
+        </>
+      )}
+      {variante === 'simplificacion' && (
+        <>
+          <path d="M4 7h16M7 12h10M10 17h4" />
+        </>
+      )}
+      {variante === 'advertencia' && (
+        <>
+          <path d="M12 3 2 20h20L12 3Z" />
+          <path d="M12 10v4M12 17v.01" />
+        </>
+      )}
+    </svg>
+    <span>{titulo}</span>
+  </p>
+  <div class="contenido">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .callout {
+    --callout-color: var(--color-foco);
+
+    display: grid;
+    gap: var(--espacio-2);
+    padding: var(--espacio-3) var(--espacio-4);
+    border: var(--borde-fino) solid var(--color-borde);
+    border-inline-start: var(--borde-capa) solid var(--callout-color);
+    border-radius: var(--radio-medio);
+    background-color: var(--color-superficie);
+  }
+
+  .callout[data-variante='nota'] {
+    --callout-color: var(--color-texto-atenuado);
+  }
+
+  .callout[data-variante='simplificacion'] {
+    --callout-color: var(--color-simplificacion);
+  }
+
+  .callout[data-variante='advertencia'] {
+    --callout-color: var(--color-advertencia);
+  }
+
+  .titulo {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-2);
+    color: var(--callout-color);
+    font-weight: var(--peso-negrita);
+  }
+
+  .icono {
+    flex: none;
+    inline-size: var(--espacio-5);
+    block-size: var(--espacio-5);
+  }
+
+  .contenido {
+    display: grid;
+    gap: var(--espacio-2);
+  }
+
+  /* Las listas conservan sus marcas aunque la página que las contiene las quite. */
+  .contenido :global(ul) {
+    list-style: disc;
+    padding-inline-start: var(--espacio-5);
+  }
+
+  .contenido :global(ol) {
+    list-style: decimal;
+    padding-inline-start: var(--espacio-5);
+  }
+</style>
