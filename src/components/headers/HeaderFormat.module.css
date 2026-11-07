@@ -1,0 +1,189 @@
+/*
+ * La rejilla o la lista se eligen según el ancho del propio componente, no de la ventana:
+ * así funciona igual en la columna de lectura de un módulo que en /demo/.
+ */
+.formato {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: var(--borde-fino) solid var(--capa-borde);
+  border-inline-start-width: var(--borde-capa);
+  border-radius: var(--radio-medio);
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.titulo {
+  font-size: var(--texto-md);
+  font-weight: var(--peso-negrita);
+}
+
+.meta {
+  color: var(--color-texto-atenuado);
+  font-size: var(--texto-sm);
+}
+
+.selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.selector legend {
+  margin-block-end: var(--espacio-1);
+  padding: 0;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-semi);
+}
+
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  cursor: pointer;
+}
+
+.valor {
+  font-family: var(--fuente-mono);
+  line-height: var(--altura-linea-mono);
+  overflow-wrap: anywhere;
+}
+
+/* ── Rejilla de 32 bits por fila (escritorio) ── */
+.rejilla {
+  display: none;
+  grid-template-columns: repeat(32, minmax(0, 1fr));
+  border-inline-start: var(--borde-fino) solid var(--capa-borde);
+}
+
+.regla {
+  padding-inline-start: var(--espacio-1);
+  border-inline-start: var(--borde-fino) solid var(--color-borde);
+  /* La primera línea vertical ya la pone el borde de la rejilla. */
+  margin-inline-start: calc(-1 * var(--borde-fino));
+  color: var(--color-texto-atenuado);
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+}
+
+.celda {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--espacio-1);
+  min-inline-size: 0;
+  padding: var(--espacio-2) var(--espacio-1);
+  border: 0;
+  border-block: var(--borde-fino) solid var(--capa-borde);
+  border-inline-end: var(--borde-fino) solid var(--capa-borde);
+  /* Las filas comparten la línea horizontal. */
+  margin-block-start: calc(-1 * var(--borde-fino));
+  background-color: var(--capa-fondo);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  text-align: center;
+  cursor: pointer;
+}
+
+.celda .nombre {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continua {
+  color: var(--color-texto-atenuado);
+  font-style: italic;
+  cursor: default;
+}
+
+/* Que el anillo de foco no quede tapado por la celda vecina. */
+.celda:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Lista de campos (celular) ── */
+.lista {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  inline-size: 100%;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: var(--borde-fino) solid var(--capa-borde);
+  border-radius: var(--radio-chico);
+  background-color: var(--capa-fondo);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.fila .nombre {
+  font-weight: var(--peso-semi);
+}
+
+.bits {
+  color: var(--color-texto-atenuado);
+  font-size: var(--texto-sm);
+}
+
+.fila .valor {
+  margin-inline-start: auto;
+}
+
+/* Campo elegido: fondo resaltado y además un borde grueso, para no depender del color. */
+.elegido {
+  background-color: var(--color-resaltado-fondo);
+  box-shadow: inset 0 0 0 var(--borde-grueso) var(--color-texto);
+}
+
+/* El texto atenuado no tiene contraste verificado sobre el fondo resaltado. */
+.elegido .bits {
+  color: var(--color-texto);
+}
+
+/* ── Descripción del campo elegido ── */
+.detalle {
+  display: grid;
+  gap: var(--espacio-1);
+  min-block-size: var(--espacio-8);
+  padding: var(--espacio-3);
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+}
+
+.detalleTitulo {
+  font-weight: var(--peso-semi);
+}
+
+/* Va al final para ganarle a las reglas de .rejilla y .lista de arriba. */
+@container (min-width: 36rem) {
+  .rejilla {
+    display: grid;
+  }
+
+  .lista {
+    display: none;
+  }
+}

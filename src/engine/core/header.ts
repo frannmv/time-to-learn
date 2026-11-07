@@ -124,7 +124,7 @@ export function longitudEnBytes(spec: HeaderSpec): number {
 
 /** Serializa el encabezado a bytes en orden de red. Valida el encabezado antes. */
 export function serializar(spec: HeaderSpec): Uint8Array {
-  let bytes = new Uint8Array(longitudEnBytes(spec));
+  let bytes: Uint8Array = new Uint8Array(longitudEnBytes(spec));
   for (const [i, ubicacion] of desplazamientos(spec).entries()) {
     const campo = spec.campos[i];
     if (campo === undefined) continue;
