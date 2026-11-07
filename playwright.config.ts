@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4321;
-const BASE_PATH = process.env.BASE_PATH ?? '/';
+// Debe coincidir con `base` en astro.config.mjs.
+const BASE_PATH = '/time-to-learn/';
 
 export default defineConfig({
   testDir: './tests/e2e',
