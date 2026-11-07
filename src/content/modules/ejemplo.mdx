@@ -1,0 +1,84 @@
+---
+titulo: Módulo de ejemplo
+descripcion: Módulo oculto que recorre la plantilla completa para probar el sitio.
+capas: [3]
+bloque: Fundamentos
+orden: 0
+minutos: 5
+oculto: true
+fuentes:
+  - tipo: rfc
+    id: RFC 1071
+    titulo: Computing the Internet Checksum
+    seccion: §1 (cálculo y verificación) y §3 (ejemplo numérico)
+    url: https://www.rfc-editor.org/rfc/rfc1071
+quiz:
+  - pregunta: '[Ejemplo] ¿Sobre qué unidades suma el checksum de Internet?'
+    opciones:
+      - Bytes sueltos de 8 bits
+      - Palabras de 16 bits formadas por pares de bytes consecutivos
+      - Palabras de 32 bits
+    correcta: 1
+    explicacion: RFC 1071 §1 agrupa los bytes de a pares en enteros de 16 bits y suma esos enteros en complemento a uno.
+  - pregunta: '[Ejemplo] Si la cantidad de bytes es impar, ¿qué hace el cálculo?'
+    opciones:
+      - Descarta el último byte
+      - Agrega un byte en cero al final, solo para calcular
+      - Repite el último byte
+    correcta: 1
+    explicacion: RFC 1071 §1 completa con un byte en cero solo para el cálculo; ese byte no se transmite.
+  - pregunta: '[Ejemplo] Al verificar, se suma todo incluido el checksum. ¿Qué resultado indica que no hubo errores detectables?'
+    opciones:
+      - Todos los bits en 0
+      - Todos los bits en 1
+      - El mismo valor que el checksum recibido
+    correcta: 1
+    explicacion: RFC 1071 §1 da la verificación por buena cuando la suma en complemento a uno da todos los bits en 1.
+---
+
+{/* Módulo de ejemplo oculto (decisión transversal 9 del plan de la Etapa 1). */}
+{/* Se genera su página pero no aparece en el índice, la navegación ni el progreso. */}
+{/* Cada sección indica qué componente la va a dibujar; las piezas siguientes los reemplazan. */}
+
+> **Texto de ejemplo.** Este módulo sirve para probar la plantilla. Su contenido no forma
+> parte del material de estudio.
+
+{/* Encabezado: lo dibuja ModuleHeader (pieza 1.4) a partir del frontmatter. */}
+
+## Idea central
+
+_Ejemplo._ Un emisor quiere que el receptor pueda detectar si algunos bits de un encabezado
+cambiaron en el camino. Para eso le agrega un número calculado a partir del propio
+encabezado: el **checksum de Internet**. El receptor repite la cuenta y compara.
+
+La cuenta toma los bytes de a pares, como palabras de 16 bits, y las suma en complemento a
+uno: cada acarreo que sale del bit más alto se vuelve a sumar abajo. El checksum es el
+complemento a uno de esa suma (RFC 1071 §1).
+
+## Simulación
+
+{/* Topology + StepControls + StateTable (piezas 1.5 y 1.6). */}
+
+_Ejemplo._ Acá va la simulación paso a paso del módulo.
+
+## Formato
+
+{/* HeaderFormat (pieza 1.7). */}
+
+_Ejemplo._ Acá va el formato del encabezado, campo por campo y con sus bits.
+
+## ¿Qué pasa si…?
+
+{/* WhatIf (pieza 1.8). */}
+
+_Ejemplo._ ¿Qué pasa si la cantidad de bytes es impar? Se agrega un byte en cero al final,
+solo para el cálculo (RFC 1071 §1).
+
+## Resumen
+
+{/* Callout (pieza 1.8). */}
+
+_Ejemplo._ Con los bytes `00 01 F2 03 F4 F5 F6 F7`, la suma en complemento a uno da `DDF2` y
+el checksum es `220D` (ejemplo numérico de RFC 1071 §3).
+
+{/* Quiz y Fuentes: los dibuja la página de módulo (pieza 1.4) desde el frontmatter. */}
