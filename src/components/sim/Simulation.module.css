@@ -1,0 +1,35 @@
+.simulacion {
+  display: grid;
+  gap: var(--espacio-4);
+  min-inline-size: 0;
+  padding: var(--espacio-4);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-radius: var(--radio-medio);
+  background-color: var(--color-fondo);
+}
+
+.explicacion {
+  padding: var(--espacio-3) var(--espacio-4);
+  border-inline-start: var(--borde-capa) solid var(--color-foco);
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+  font-size: var(--texto-md);
+}
+
+.tablas {
+  display: grid;
+  gap: var(--espacio-4);
+  min-inline-size: 0;
+}
+
+.ayuda {
+  color: var(--color-texto-atenuado);
+  font-size: var(--texto-sm);
+}
+
+.ayuda kbd {
+  padding-inline: var(--espacio-1);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-xs);
+}

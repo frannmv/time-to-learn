@@ -14,6 +14,8 @@ export default defineConfig([
     'playwright-report/',
     'test-results/',
     'fuentes/',
+    // Worktrees de otras sesiones de Claude Code: tienen su propio código en curso.
+    '.claude/',
   ]),
 
   js.configs.recommended,

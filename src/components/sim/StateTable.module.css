@@ -1,0 +1,55 @@
+/* El desplazamiento horizontal queda dentro de la tabla, nunca en la página. */
+.desplazable {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-radius: var(--radio-chico);
+}
+
+.tabla {
+  min-inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-sm);
+}
+
+.titulo {
+  padding-block-end: var(--espacio-2);
+  text-align: start;
+  font-weight: var(--peso-semi);
+}
+
+.tabla th,
+.tabla td {
+  padding: var(--espacio-2) var(--espacio-3);
+  border-block-end: var(--borde-fino) solid var(--color-borde);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.tabla th {
+  background-color: var(--color-superficie);
+}
+
+.resaltada {
+  background-color: var(--color-resaltado-fondo);
+}
+
+.resaltada > :first-child {
+  box-shadow: inset var(--borde-capa) 0 0 var(--color-foco);
+}
+
+/* Marca de texto de la fila («nueva», «cambió»): el resaltado no depende solo del color. */
+.marca {
+  display: inline-block;
+  margin-inline-end: var(--espacio-2);
+  padding-inline: var(--espacio-1);
+  border: var(--borde-fino) solid var(--color-texto);
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-negrita);
+  text-transform: uppercase;
+}
+
+.vacia {
+  color: var(--color-texto-atenuado);
+  font-style: italic;
+}
