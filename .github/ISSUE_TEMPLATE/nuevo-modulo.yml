@@ -1,0 +1,71 @@
+name: Nuevo módulo
+description: Proponer o planificar un módulo de protocolo.
+title: 'feat(<protocolo>): módulo de <protocolo>'
+labels: ['módulo']
+body:
+  - type: input
+    id: protocolo
+    attributes:
+      label: Protocolo o tema
+      placeholder: Ej. ARP
+    validations:
+      required: true
+  - type: dropdown
+    id: capa
+    attributes:
+      label: Capa OSI
+      options:
+        - '1 · Física'
+        - '2 · Enlace'
+        - '3 · Red'
+        - '4 · Transporte'
+        - '5-7 · Aplicación'
+    validations:
+      required: true
+  - type: input
+    id: etapa
+    attributes:
+      label: Etapa
+      placeholder: Ej. Etapa 7
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea central
+      description: Dos o tres frases sobre qué problema resuelve el protocolo.
+    validations:
+      required: true
+  - type: textarea
+    id: simulacion
+    attributes:
+      label: Simulación
+      description: Escenario paso a paso que se va a modelar.
+    validations:
+      required: true
+  - type: textarea
+    id: whatif
+    attributes:
+      label: Qué pasa si…
+      description: Al menos un escenario de falla o caso borde.
+    validations:
+      required: true
+  - type: textarea
+    id: fuentes
+    attributes:
+      label: Fuentes
+      description: Estándar o RFC y capítulo de Stallings o apunte de la cátedra.
+    validations:
+      required: true
+  - type: checkboxes
+    id: plantilla
+    attributes:
+      label: Plantilla del módulo (sección 6)
+      options:
+        - label: Encabezado (ModuleHeader)
+        - label: Idea central
+        - label: Simulación (Topology + StepControls + StateTable)
+        - label: Formato (HeaderFormat)
+        - label: Qué pasa si (WhatIf)
+        - label: Resumen (Callout)
+        - label: Quiz (3 a 5 preguntas)
+        - label: Fuentes en el frontmatter
+        - label: Tests del motor

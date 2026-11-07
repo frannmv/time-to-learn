@@ -1,0 +1,31 @@
+name: Error técnico en el contenido
+description: Un dato técnico no coincide con el estándar, el RFC o la bibliografía.
+title: 'fix(<módulo>): '
+labels: ['error técnico']
+body:
+  - type: input
+    id: modulo
+    attributes:
+      label: Módulo
+      placeholder: Ej. TCP y UDP
+    validations:
+      required: true
+  - type: textarea
+    id: dice
+    attributes:
+      label: Qué dice el sitio
+    validations:
+      required: true
+  - type: textarea
+    id: deberia
+    attributes:
+      label: Qué debería decir
+    validations:
+      required: true
+  - type: textarea
+    id: fuente
+    attributes:
+      label: Fuente
+      description: Estándar o RFC (con sección), capítulo de Stallings o apunte de la cátedra.
+    validations:
+      required: true
