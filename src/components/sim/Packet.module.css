@@ -8,17 +8,32 @@
   stroke-width: var(--borde-fino);
 }
 
+/* La cola también se reconoce por el texto «Cola · capa N»; el punteado la refuerza. */
+.cola {
+  stroke-width: var(--borde-grueso);
+  stroke-dasharray: var(--espacio-1) var(--espacio-1);
+}
+
 .franja {
   fill: var(--capa-borde, var(--color-borde));
 }
 
+/* Fila con el nombre de la PDU, arriba de los encabezados. */
+.titulo {
+  fill: var(--color-superficie);
+  stroke: var(--color-borde);
+  stroke-width: var(--borde-fino);
+}
+
 .nombre,
-.capa {
+.capa,
+.pdu {
   font-family: var(--fuente-mono);
   font-size: var(--texto-xs);
 }
 
-.nombre {
+.nombre,
+.pdu {
   fill: var(--color-texto);
   font-weight: var(--peso-semi);
 }

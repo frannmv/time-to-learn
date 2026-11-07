@@ -4,6 +4,7 @@
  * está cada paquete. Solo leen la topología y el paso; no deciden nada.
  */
 import { NOMBRE_CAPA } from '../../engine/core/capas';
+import { partesEnElCable } from '../../engine/core/pdu';
 import type { Paquete, Step, Topologia } from '../../engine/core/timeline';
 import { NOMBRE_TIPO } from './geometria';
 
@@ -35,19 +36,29 @@ export function describirTopologia(topologia: Topologia): string {
   return frases.join(' ');
 }
 
-/** «Paquete con IPv4 (capa 3, Red): sobre el enlace de A hacia B.» */
+/**
+ * «Paquete con IPv4 (capa 3, Red): sobre el enlace de A hacia B.» Si el paso nombra la PDU
+ * y la capa: «Trama Ethernet con Ethernet II (capa 2, Enlace de datos) y FCS (cola de la
+ * capa 2, Enlace de datos): en la capa 2 de B.» Las partes van en el orden del cable.
+ */
 export function describirPaquete(paquete: Paquete, topologia: Topologia): string {
   const etiqueta = (id: string) => topologia.nodos.find((n) => n.id === id)?.etiqueta ?? id;
-  const encabezados = paquete.encabezados.map(
-    (e) => `${e.nombre} (capa ${e.capa}, ${NOMBRE_CAPA[e.capa]})`,
-  );
-  const que =
-    encabezados.length > 0 ? `Paquete con ${enumerar(encabezados)}` : 'Paquete sin encabezados';
+  const partes = partesEnElCable(paquete).flatMap((p) => {
+    if (p.tipo === 'datos') return [];
+    const capa = `capa ${p.capa}, ${NOMBRE_CAPA[p.capa]}`;
+    return [`${p.encabezado.nombre} (${p.tipo === 'cola' ? `cola de la ${capa}` : capa})`];
+  });
+  const nombre = paquete.pdu ?? 'Paquete';
+  const que = partes.length > 0 ? `${nombre} con ${enumerar(partes)}` : `${nombre} sin encabezados`;
   const { ubicacion } = paquete;
-  const donde =
-    ubicacion.tipo === 'nodo'
-      ? `en ${etiqueta(ubicacion.nodo)}`
-      : `sobre el enlace de ${etiqueta(ubicacion.desde)} hacia ${etiqueta(ubicacion.hacia)}`;
+  let donde: string;
+  if (ubicacion.tipo === 'enlace') {
+    donde = `sobre el enlace de ${etiqueta(ubicacion.desde)} hacia ${etiqueta(ubicacion.hacia)}`;
+  } else if (ubicacion.capa !== undefined) {
+    donde = `en la capa ${ubicacion.capa} de ${etiqueta(ubicacion.nodo)}`;
+  } else {
+    donde = `en ${etiqueta(ubicacion.nodo)}`;
+  }
   return `${que}: ${donde}.`;
 }
 

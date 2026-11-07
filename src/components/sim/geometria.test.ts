@@ -9,6 +9,7 @@ import {
   claveUbicacion,
   duracionEnMs,
   esAvanceDeUnPaso,
+  filasPaquete,
   lineasEncabezado,
   posicionPaquete,
   posicionesNodos,
@@ -24,6 +25,7 @@ const pxDeRem = (valor: string | undefined) => Number.parseFloat(valor ?? '') * 
 
 const ipv4: Encabezado = { capa: 3, nombre: 'IPv4', campos: [] };
 const ethernet: Encabezado = { capa: 2, nombre: 'Ethernet II', campos: [] };
+const fcs: Encabezado = { capa: 2, nombre: 'FCS', campos: [], parte: 'cola' };
 
 const topologia: Topologia = {
   nodos: [
@@ -49,20 +51,59 @@ describe('MEDIDAS', () => {
 describe('lineasEncabezado', () => {
   it('muestra el nombre del encabezado y el número y nombre de su capa', () => {
     expect(lineasEncabezado(ipv4)).toEqual(['IPv4', 'Capa 3 · Red']);
+    expect(lineasEncabezado({ ...ipv4, parte: 'encabezado' })).toEqual(['IPv4', 'Capa 3 · Red']);
+  });
+
+  it('una cola lo dice en texto', () => {
+    expect(lineasEncabezado(fcs)).toEqual(['FCS', 'Cola · capa 2 · Enlace de datos']);
+  });
+});
+
+describe('filasPaquete', () => {
+  it('apila los encabezados con la capa más alta arriba y las colas debajo', () => {
+    const filas = filasPaquete({ encabezados: [ethernet, fcs, ipv4] });
+    expect(filas.map((f) => [f.parte, f.lineas[0]])).toEqual([
+      ['encabezado', 'IPv4'],
+      ['encabezado', 'Ethernet II'],
+      ['cola', 'FCS'],
+    ]);
+    expect(filas.map((f) => f.capa)).toEqual([3, 2, 2]);
+  });
+
+  it('sin encabezados dibuja una fila neutra', () => {
+    expect(filasPaquete({ encabezados: [] })).toEqual([{ lineas: ['Sin encabezados', ''] }]);
   });
 });
 
 describe('tamanoPaquete', () => {
+  const ancho = (caracteres: number) =>
+    Math.ceil(
+      MEDIDAS.franja + 2 * MEDIDAS.relleno + caracteres * MEDIDAS.textoChico * MEDIDAS.caracterMono,
+    );
+
   it('apila una fila por encabezado y ajusta el ancho a la línea más larga', () => {
-    const { ancho, alto } = tamanoPaquete([ethernet, ipv4]);
-    expect(alto).toBe(2 * MEDIDAS.altoFila);
     // La línea más larga es «Capa 2 · Enlace de datos» (24 caracteres).
-    const texto = 24 * MEDIDAS.textoChico * MEDIDAS.caracterMono;
-    expect(ancho).toBe(Math.ceil(MEDIDAS.franja + 2 * MEDIDAS.relleno + texto));
+    expect(tamanoPaquete({ encabezados: [ethernet, ipv4] })).toEqual({
+      ancho: ancho(24),
+      alto: 2 * MEDIDAS.altoFila,
+    });
+  });
+
+  it('suma una fila por cola y la del nombre de la PDU', () => {
+    // La línea más larga es «Cola · capa 2 · Enlace de datos» (31 caracteres).
+    expect(tamanoPaquete({ encabezados: [ethernet, fcs, ipv4], pdu: 'Trama Ethernet' })).toEqual({
+      ancho: ancho(31),
+      alto: 3 * MEDIDAS.altoFila + MEDIDAS.altoTitulo,
+    });
+  });
+
+  it('el nombre de la PDU también cuenta para el ancho', () => {
+    const pdu = 'Una PDU con un nombre bastante más largo';
+    expect(tamanoPaquete({ encabezados: [ipv4], pdu }).ancho).toBe(ancho(pdu.length));
   });
 
   it('sin encabezados ocupa una fila', () => {
-    expect(tamanoPaquete([]).alto).toBe(MEDIDAS.altoFila);
+    expect(tamanoPaquete({ encabezados: [] }).alto).toBe(MEDIDAS.altoFila);
   });
 });
 
@@ -82,6 +123,12 @@ describe('posicionPaquete', () => {
     expect(
       posicionPaquete({ tipo: 'enlace', enlace: 'a-b', desde: 'b', hacia: 'a' }, nodos),
     ).toEqual(esperado);
+  });
+
+  it('una ubicación con capa se dibuja en su nodo', () => {
+    expect(posicionPaquete({ tipo: 'nodo', nodo: 'b', capa: 3 }, nodos)).toEqual(
+      posicionPaquete({ tipo: 'nodo', nodo: 'b' }, nodos),
+    );
   });
 
   it('falla si el nodo no existe', () => {
@@ -118,7 +165,7 @@ describe('calcularCaja', () => {
     for (const paso of timeline.pasos) {
       for (const paquete of paso.paquetes) {
         const { x, y } = posicionPaquete(paquete.ubicacion, todos);
-        const { ancho, alto } = tamanoPaquete(paquete.encabezados);
+        const { ancho, alto } = tamanoPaquete(paquete);
         expect(contiene(caja, x - ancho / 2, y - alto)).toBe(true);
         expect(contiene(caja, x + ancho / 2, y)).toBe(true);
       }
