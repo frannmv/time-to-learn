@@ -134,6 +134,14 @@
   --ancho-menu: 16rem; /* columna de navegación por bloque en escritorio */
   --ancho-sitio: 80rem; /* ancho máximo de encabezado, menú y contenido juntos */
 
+  /*
+   * ── Diagramas (SVG) ──
+   * Tamaño de una unidad del viewBox. Con 1px, el texto del diagrama mide lo mismo que sus
+   * tokens de tamaño: es el mínimo legible. Por debajo, el diagrama se desplaza.
+   */
+  --escala-diagrama-min: 1px;
+  --escala-diagrama-max: 1.25px;
+
   /* ── Animación ── */
   --duracion-rapida: 150ms;
   --duracion-media: 300ms;
