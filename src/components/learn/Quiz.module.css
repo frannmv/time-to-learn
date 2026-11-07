@@ -1,0 +1,156 @@
+.quiz {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.previo {
+  padding: var(--espacio-3) var(--espacio-4);
+  border-inline-start: var(--borde-capa) solid var(--color-foco);
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+}
+
+.pregunta {
+  display: grid;
+  gap: var(--espacio-3);
+  min-inline-size: 0;
+  padding: var(--espacio-4);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-radius: var(--radio-medio);
+}
+
+/* El legend de un fieldset no participa de la grilla: se separa con margen. */
+.enunciado {
+  float: inline-start;
+  inline-size: 100%;
+  margin-block-end: var(--espacio-3);
+  padding: 0;
+  font-weight: var(--peso-semi);
+}
+
+.numero {
+  display: block;
+  color: var(--color-texto-atenuado);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-normal);
+}
+
+.opciones {
+  clear: both;
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.opcion {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+
+.opcion:has(input:not(:disabled)):hover {
+  border-color: var(--color-foco);
+}
+
+.opcion:has(input:disabled) {
+  cursor: default;
+}
+
+/* Además del color, el borde se engrosa y el texto dice cuál es cuál. */
+.opcion[data-estado] {
+  border-width: var(--borde-grueso);
+}
+
+.opcion[data-estado='correcta'] {
+  border-color: var(--color-correcto);
+}
+
+.opcion[data-estado='incorrecta'] {
+  border-style: dashed;
+  border-color: var(--color-incorrecto);
+}
+
+.opcion input {
+  flex: none;
+  accent-color: var(--color-foco);
+}
+
+.marca {
+  font-weight: var(--peso-negrita);
+}
+
+.opcion[data-estado='correcta'] .marca {
+  color: var(--color-correcto);
+}
+
+.opcion[data-estado='incorrecta'] .marca {
+  color: var(--color-incorrecto);
+}
+
+.boton {
+  justify-self: start;
+  padding: var(--espacio-2) var(--espacio-4);
+  border: var(--borde-grueso) solid var(--color-foco);
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.boton[aria-disabled='true'] {
+  border-width: var(--borde-fino);
+  border-style: dashed;
+  border-color: var(--color-borde);
+  color: var(--color-texto-atenuado);
+  cursor: not-allowed;
+}
+
+.devolucion {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3) var(--espacio-4);
+  border-inline-start: var(--borde-capa) solid;
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+}
+
+.devolucion[data-resultado='correcta'] {
+  border-color: var(--color-correcto);
+}
+
+.devolucion[data-resultado='incorrecta'] {
+  border-color: var(--color-incorrecto);
+}
+
+.veredicto {
+  font-weight: var(--peso-negrita);
+}
+
+.devolucion[data-resultado='correcta'] .veredicto {
+  color: var(--color-correcto);
+}
+
+.devolucion[data-resultado='incorrecta'] .veredicto {
+  color: var(--color-incorrecto);
+}
+
+.resultado {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-radius: var(--radio-medio);
+  background-color: var(--color-superficie);
+}
+
+.puntaje {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-negrita);
+}
+
+.atenuado {
+  color: var(--color-texto-atenuado);
+}
