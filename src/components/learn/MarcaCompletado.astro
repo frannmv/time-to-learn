@@ -1,0 +1,48 @@
+---
+/**
+ * Marca «Completado» de un módulo en un índice (versión detallada del indicador TTL, pieza 1.9).
+ *
+ * Se dibuja oculta en el build. Un script chico, sin React, muestra las marcas de los módulos
+ * completados y las vuelve a revisar cada vez que cambia el progreso, sin recargar. El script va
+ * una sola vez por página aunque haya muchas marcas, y solo en las páginas que tienen alguna.
+ *
+ * El texto dice «Completado»: la marca no depende del color ni del ícono. Si el almacenamiento
+ * está bloqueado, las marcas quedan ocultas.
+ */
+interface Props {
+  /** Id del módulo. */
+  id: string;
+}
+
+const { id } = Astro.props;
+---
+
+<span class="marca-completado" data-marca-completado={id} hidden>
+  <span aria-hidden="true">✓</span> Completado
+</span>
+
+<script>
+  import { interpretarProgreso, leerProgresoCrudo, suscribirProgreso } from '../../lib/progreso';
+
+  function actualizar() {
+    const { modulos } = interpretarProgreso(leerProgresoCrudo());
+    for (const marca of document.querySelectorAll<HTMLElement>('[data-marca-completado]')) {
+      marca.hidden = !Object.hasOwn(modulos, marca.dataset.marcaCompletado ?? '');
+    }
+  }
+
+  actualizar();
+  suscribirProgreso(actualizar);
+</script>
+
+<style>
+  .marca-completado {
+    color: var(--color-correcto);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-negrita);
+  }
+
+  .marca-completado[hidden] {
+    display: none;
+  }
+</style>

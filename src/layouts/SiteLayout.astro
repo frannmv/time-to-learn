@@ -1,8 +1,12 @@
 ---
 /**
  * Layout de las páginas del sitio (extiende BaseLayout): enlace para saltar al contenido,
- * encabezado con el nombre del sitio, navegación principal y el lugar del indicador TTL; menú
+ * encabezado con el nombre del sitio, navegación principal y el indicador de progreso TTL; menú
  * de módulos por bloque; y pie con las licencias.
+ *
+ * El indicador TTL es una isla chica (`client:idle`) que recibe solo id, título y capa de los
+ * módulos visibles. Sin módulos visibles su estado vacío es fijo, así que se dibuja sin directiva
+ * `client:` y el encabezado no carga JavaScript.
  *
  * El menú de módulos es un <details>: en celular se abre y se cierra sin JavaScript; en
  * escritorio queda siempre abierto como columna lateral (con ::details-content; en los
@@ -10,8 +14,10 @@
  */
 import BaseLayout from './BaseLayout.astro';
 import BlockNav from '../components/site/BlockNav.astro';
+import TtlProgress from '../components/learn/TtlProgress';
 import { obtenerModulos } from '../lib/modulos';
 import { ruta } from '../lib/navegacion';
+import { modulosDelRecorrido } from '../lib/recorrido';
 
 interface Props {
   titulo?: string;
@@ -24,7 +30,8 @@ interface Props {
 const { titulo, descripcion, noindex, menu = true } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
-const modulos = menu ? await obtenerModulos() : [];
+const modulos = await obtenerModulos();
+const recorrido = modulosDelRecorrido(modulos);
 
 const principal = [
   { texto: 'Inicio', href: ruta(base) },
@@ -55,8 +62,13 @@ const REPOSITORIO = 'https://github.com/frannmv/time-to-learn';
           ))}
         </ul>
       </nav>
-      {/* Lugar reservado para el indicador de progreso TTL (lo completa la pieza 1.9). */}
-      <div class="progreso-ttl" data-progreso-ttl></div>
+      <div class="progreso-ttl" data-progreso-ttl>
+        {recorrido.length > 0 ? (
+          <TtlProgress client:idle modulos={recorrido} />
+        ) : (
+          <TtlProgress modulos={recorrido} />
+        )}
+      </div>
     </div>
   </header>
 

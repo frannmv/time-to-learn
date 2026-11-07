@@ -1,0 +1,89 @@
+.indicador {
+  display: grid;
+  gap: var(--espacio-1);
+  justify-items: start;
+  min-inline-size: 0;
+  font-size: var(--texto-sm);
+}
+
+.cuenta {
+  font-weight: var(--peso-semi);
+}
+
+.vacio {
+  color: var(--color-texto-atenuado);
+}
+
+/* Ruta de puntos: un punto por módulo, unidos por un tramo de línea. */
+.ruta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: var(--espacio-1);
+  list-style: none;
+  padding: 0;
+}
+
+.punto {
+  display: flex;
+  align-items: center;
+}
+
+.punto + .punto::before {
+  content: '';
+  inline-size: var(--espacio-2);
+  block-size: var(--borde-grueso);
+  background-color: var(--color-borde);
+}
+
+.punto::after {
+  content: '';
+  inline-size: var(--espacio-3);
+  block-size: var(--espacio-3);
+  border: var(--borde-grueso) solid var(--capa-borde);
+  border-radius: var(--radio-pildora);
+  background-color: var(--color-fondo);
+}
+
+/* Completado: relleno. Pendiente: solo el borde. La forma cambia, no solo el color. */
+.punto[data-completado='true']::after {
+  background-color: var(--capa-borde);
+}
+
+.reinicio {
+  display: grid;
+  justify-items: start;
+  margin-block-start: var(--espacio-2);
+}
+
+.confirmacion {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: var(--borde-fino) solid var(--color-borde);
+  border-inline-start: var(--borde-capa) solid var(--color-advertencia);
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+  font-size: var(--texto-base);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.boton {
+  padding: var(--espacio-2) var(--espacio-4);
+  border: var(--borde-grueso) solid var(--color-foco);
+  border-radius: var(--radio-chico);
+  background-color: var(--color-superficie);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+/* La región de estado queda siempre en el árbol (para que se anuncie); vacía no ocupa lugar. */
+.aviso:not(:empty) {
+  margin-block-start: var(--espacio-2);
+}
