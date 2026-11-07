@@ -1,0 +1,108 @@
+/*
+ * La fila o la lista se eligen según el ancho del propio componente, no de la ventana: así
+ * funciona igual en la columna de lectura de un módulo que en /demo/.
+ */
+.pdu {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--espacio-2);
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.titulo {
+  font-size: var(--texto-md);
+  font-weight: var(--peso-negrita);
+}
+
+.meta {
+  color: var(--color-texto-atenuado);
+  font-size: var(--texto-sm);
+}
+
+/* ── Lista vertical (angosto) ── */
+.partes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Colores de capa por data-capa (tokens.css). Los datos no tienen capa: colores neutros. */
+.parte {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-1);
+  min-inline-size: 0;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: var(--borde-fino) solid var(--capa-borde, var(--color-borde));
+  border-inline-start-width: var(--borde-capa);
+  border-radius: var(--radio-chico);
+  background-color: var(--capa-fondo, var(--color-superficie));
+  color: var(--color-texto);
+}
+
+/* La cola también se reconoce por el texto «Cola · capa N»; el punteado la refuerza. */
+.cola {
+  border-style: dashed;
+  border-inline-start-style: solid;
+}
+
+/* Sin capa propia: no hereda el color de capa de un contenedor. */
+.datos {
+  --capa-fondo: initial;
+  --capa-borde: initial;
+}
+
+.nombre {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-semi);
+  overflow-wrap: anywhere;
+}
+
+.detalle {
+  font-size: var(--texto-sm);
+  overflow-wrap: anywhere;
+}
+
+.tamano {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+}
+
+/* ── Fila horizontal (con espacio). Va al final para ganarle a las reglas de arriba. ── */
+@container (min-width: 36rem) {
+  .partes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  /* Las partes van pegadas, como en el cable: comparten el borde vertical. */
+  .parte {
+    flex: 1 1 auto;
+    border-radius: 0;
+    margin-inline-start: calc(-1 * var(--borde-fino));
+  }
+
+  .parte:first-child {
+    margin-inline-start: 0;
+    border-start-start-radius: var(--radio-chico);
+    border-end-start-radius: var(--radio-chico);
+  }
+
+  .parte:last-child {
+    border-start-end-radius: var(--radio-chico);
+    border-end-end-radius: var(--radio-chico);
+  }
+}
