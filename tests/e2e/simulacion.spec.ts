@@ -39,9 +39,10 @@ const EXPLICACION = {
 async function abrirSimulacion(page: Page): Promise<Locator> {
   const simulacion = page.getByRole('region', { name: 'Simulación de demostración' });
   await simulacion.scrollIntoViewIfNeeded();
-  await expect(page.locator('astro-island[component-url*="Simulation"]')).not.toHaveAttribute(
-    'ssr',
-  );
+  // /demo/ tiene más de una simulación: se espera la isla que contiene a esta.
+  await expect(
+    page.locator('astro-island[component-url*="Simulation"]').filter({ has: simulacion }),
+  ).not.toHaveAttribute('ssr');
   return simulacion;
 }
 

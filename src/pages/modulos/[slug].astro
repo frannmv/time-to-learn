@@ -12,6 +12,7 @@ import { render } from 'astro:content';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ModuleHeader from '../../components/learn/ModuleHeader.astro';
 import SourceList from '../../components/learn/SourceList.astro';
+import Quiz from '../../components/learn/Quiz';
 import { obtenerModulos, obtenerTodosLosModulos, type Modulo } from '../../lib/modulos';
 import { anteriorSiguiente, rutaModulo } from '../../lib/navegacion';
 
@@ -53,13 +54,9 @@ const { anterior, siguiente } = anteriorSiguiente(await obtenerModulos(), modulo
       <Content />
     </div>
 
-    {/* Lugar reservado para el Quiz (lo completa la pieza 1.8 con data.quiz). */}
     <section aria-labelledby="quiz" class="quiz" data-quiz>
       <h2 id="quiz">Quiz</h2>
-      <p class="atenuado">
-        Este módulo tiene {data.quiz.length} preguntas de repaso. El cuestionario interactivo se
-        agrega en una próxima versión del sitio.
-      </p>
+      <Quiz client:visible moduloId={modulo.id} preguntas={data.quiz} />
     </section>
 
     <SourceList fuentes={data.fuentes} />

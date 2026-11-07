@@ -63,9 +63,9 @@ test.describe('página de módulo', () => {
     await expect(encabezado).toContainText('Ninguno');
   });
 
-  test('muestra el cuerpo, el lugar del quiz y las fuentes', async ({ page }) => {
+  test('muestra el cuerpo, el quiz y las fuentes', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Idea central' })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Quiz' })).toContainText('3 preguntas');
+    await expect(page.getByRole('region', { name: 'Quiz' }).getByRole('group')).toHaveCount(3);
     const fuentes = page.getByRole('region', { name: 'Fuentes' });
     await expect(fuentes).toContainText('RFC 1071');
     await expect(
