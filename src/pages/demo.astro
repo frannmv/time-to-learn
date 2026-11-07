@@ -8,6 +8,9 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import LayerBadge from '../components/learn/LayerBadge.astro';
 import ModuleHeader from '../components/learn/ModuleHeader.astro';
 import SourceList from '../components/learn/SourceList.astro';
+import Callout from '../components/learn/Callout.astro';
+import WhatIf from '../components/learn/WhatIf.astro';
+import Quiz, { type PreguntaQuiz } from '../components/learn/Quiz';
 import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 import Simulation from '../components/sim/Simulation';
@@ -48,6 +51,34 @@ const visibles = await obtenerModulos();
 
 // Pieza 1.5: la línea de tiempo se calcula en el build y llega como props a la isla.
 const timelineDemo = simularDemo();
+
+// Pieza 1.8: preguntas sobre el escenario ficticio de la simulación de demostración. El id
+// «demo» no es un módulo real; la pieza 1.9 lo usa para probar el indicador de progreso.
+const preguntasDemo: PreguntaQuiz[] = [
+  {
+    pregunta: '[Ejemplo] En el escenario de demostración, ¿por qué nodo pasa el mensaje de A a C?',
+    opciones: ['Por ninguno: va directo', 'Por B', 'Por un cuarto nodo, D'],
+    correcta: 1,
+    explicacion: 'La topología del escenario es A — B — C: el mensaje va de A a B y de B a C.',
+  },
+  {
+    pregunta: '[Ejemplo] ¿Qué anota B en su registro?',
+    opciones: [
+      'El mensaje, su origen y su destino',
+      'Solo la hora de llegada',
+      'Nada: B no tiene registro',
+    ],
+    correcta: 0,
+    explicacion: 'La tabla «Registro de B» tiene las columnas Mensaje, Origen y Destino.',
+  },
+  {
+    pregunta: '[Ejemplo] ¿Qué protocolo real representa el escenario de demostración?',
+    opciones: ['Ethernet', 'IPv4', 'Ninguno: es ficticio'],
+    correcta: 2,
+    explicacion:
+      'El escenario se inventó para probar los componentes: no representa ningún protocolo.',
+  },
+];
 ---
 
 <SiteLayout titulo="Demostración" descripcion="Página interna de desarrollo." noindex>
@@ -191,6 +222,64 @@ const timelineDemo = simularDemo();
         titulo="Simulación de demostración"
         vistas={['tablas']}
       />
+    </section>
+
+    <section aria-labelledby="callout">
+      <h2 id="callout">Callout</h2>
+      <p class="atenuado">
+        Recuadros sin JavaScript. Cada variante se reconoce por su título en texto, además del color
+        y el ícono.
+      </p>
+      <div class="lista" data-testid="demo-callouts">
+        <Callout variante="resumen">
+          <ul>
+            <li>[Ejemplo] Un punto para repasar.</li>
+            <li>[Ejemplo] Otro punto para repasar.</li>
+          </ul>
+        </Callout>
+        <Callout variante="nota">
+          <p>[Ejemplo] Un comentario al margen del tema principal.</p>
+        </Callout>
+        <Callout variante="simplificacion">
+          <p>[Ejemplo] Qué deja afuera la simulación respecto del estándar.</p>
+        </Callout>
+        <Callout variante="advertencia">
+          <p>[Ejemplo] Un error común que conviene evitar.</p>
+        </Callout>
+        <Callout variante="nota" titulo="Título propio">
+          <p>[Ejemplo] Una nota con un título distinto del de su variante.</p>
+        </Callout>
+      </div>
+    </section>
+
+    <section aria-labelledby="que-pasa-si">
+      <h2 id="que-pasa-si">Qué pasa si</h2>
+      <p class="atenuado">
+        Bloques «¿Qué pasa si…?» sobre el escenario ficticio de la simulación: uno solo con la
+        explicación y otro con su propia simulación.
+      </p>
+      <WhatIf pregunta="[Ejemplo] ¿Qué pasa si B no está?">
+        <p>
+          En el escenario de demostración, A y C solo se conectan a través de B: sin B, el mensaje
+          no tiene por dónde llegar.
+        </p>
+      </WhatIf>
+      <WhatIf
+        pregunta="[Ejemplo] ¿Qué pasa si se sigue el mensaje hasta C?"
+        timeline={timelineDemo}
+        tituloSimulacion="Simulación del caso: el mensaje llega a C"
+      >
+        <p>El mensaje pasa por B, que lo anota en su registro, y llega a C.</p>
+      </WhatIf>
+    </section>
+
+    <section aria-labelledby="quiz">
+      <h2 id="quiz">Quiz</h2>
+      <p class="atenuado">
+        Quiz de ejemplo sobre el escenario ficticio. Al terminarlo se guarda el resultado del módulo
+        «demo» en este navegador.
+      </p>
+      <Quiz client:visible moduloId="demo" preguntas={preguntasDemo} />
     </section>
 
     <section aria-labelledby="layout">

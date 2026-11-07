@@ -36,6 +36,9 @@ quiz:
     explicacion: RFC 1071 §1 da la verificación por buena cuando la suma en complemento a uno da todos los bits en 1.
 ---
 
+import Callout from '../../components/learn/Callout.astro';
+import WhatIf from '../../components/learn/WhatIf.astro';
+
 {/* Módulo de ejemplo oculto (decisión transversal 9 del plan de la Etapa 1). */}
 {/* Se genera su página pero no aparece en el índice, la navegación ni el progreso. */}
 {/* Cada sección indica qué componente la va a dibujar; las piezas siguientes los reemplazan. */}
@@ -69,16 +72,26 @@ _Ejemplo._ Acá va el formato del encabezado, campo por campo y con sus bits.
 
 ## ¿Qué pasa si…?
 
-{/* WhatIf (pieza 1.8). */}
+<WhatIf pregunta="¿Qué pasa si la cantidad de bytes es impar?">
+  _Ejemplo._ Al último byte le falta su par para formar una palabra de 16 bits. Se agrega un byte en
+  cero al final, solo para el cálculo: ese byte no se transmite (RFC 1071 §1).
+</WhatIf>
 
-_Ejemplo._ ¿Qué pasa si la cantidad de bytes es impar? Se agrega un byte en cero al final,
-solo para el cálculo (RFC 1071 §1).
+<Callout variante="simplificacion">
+  _Ejemplo._ Este módulo hace la suma palabra por palabra. No muestra las técnicas para calcular el
+  checksum más rápido que describe RFC 1071.
+</Callout>
 
 ## Resumen
 
-{/* Callout (pieza 1.8). */}
+<Callout variante="resumen" titulo="Para repasar">
 
-_Ejemplo._ Con los bytes `00 01 F2 03 F4 F5 F6 F7`, la suma en complemento a uno da `DDF2` y
-el checksum es `220D` (ejemplo numérico de RFC 1071 §3).
+- _Ejemplo._ El checksum de Internet suma palabras de 16 bits en complemento a uno: cada
+  acarreo que sale del bit más alto se vuelve a sumar abajo (RFC 1071 §1).
+- Si la cantidad de bytes es impar, se completa con un byte en cero solo para calcular.
+- Con los bytes `00 01 F2 03 F4 F5 F6 F7`, la suma da `DDF2` y el checksum es `220D`
+  (ejemplo numérico de RFC 1071 §3).
+
+</Callout>
 
 {/* Quiz y Fuentes: los dibuja la página de módulo (pieza 1.4) desde el frontmatter. */}
