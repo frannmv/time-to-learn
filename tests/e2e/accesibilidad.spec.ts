@@ -8,6 +8,9 @@ import { revisarAccesibilidad } from './ayudas';
 const PAGINAS = [
   { nombre: 'inicio', ruta: './' },
   { nombre: 'demostración', ruta: 'demo/' },
+  { nombre: 'módulos por capa', ruta: 'capas/' },
+  { nombre: 'módulo de ejemplo', ruta: 'modulos/ejemplo/' },
+  { nombre: 'página no encontrada', ruta: 'no-existe/' },
 ];
 
 for (const { nombre, ruta } of PAGINAS) {
