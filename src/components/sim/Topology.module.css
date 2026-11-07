@@ -1,0 +1,77 @@
+/* El desplazamiento horizontal queda dentro del diagrama, nunca en la página. */
+.desplazable {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-radius: var(--radio-chico);
+}
+
+/*
+ * Escala con el ancho disponible, entre un mínimo legible (el texto no queda más chico que
+ * sus tokens) y un máximo. --ancho-diagrama es el ancho del viewBox, sin unidad.
+ */
+.diagrama {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  min-inline-size: calc(var(--ancho-diagrama) * var(--escala-diagrama-min));
+  max-inline-size: calc(var(--ancho-diagrama) * var(--escala-diagrama-max));
+  margin-inline: auto;
+  font-family: var(--fuente-texto);
+}
+
+.enlace,
+.enlaceResaltado {
+  stroke-linecap: round;
+}
+
+/* Sin resaltar: fino y punteado. Resaltado: sólido, más grueso y con el color de foco. */
+.enlace {
+  stroke: var(--color-borde);
+  stroke-width: var(--borde-grueso);
+  stroke-dasharray: var(--espacio-2) var(--espacio-1);
+}
+
+.enlaceResaltado {
+  stroke: var(--color-foco);
+  stroke-width: var(--borde-capa);
+}
+
+.forma {
+  fill: var(--color-superficie);
+  stroke: var(--color-texto);
+  stroke-width: var(--borde-grueso);
+}
+
+.glifo {
+  fill: none;
+  stroke: var(--color-texto);
+  stroke-width: var(--borde-grueso);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.punto {
+  fill: var(--color-texto);
+}
+
+.resaltado .forma {
+  stroke: var(--color-foco);
+  stroke-width: var(--borde-capa);
+}
+
+.anillo {
+  fill: none;
+  stroke: var(--color-foco);
+  stroke-width: var(--borde-grueso);
+}
+
+.etiqueta {
+  fill: var(--color-texto);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-negrita);
+}
+
+.tipo {
+  fill: var(--color-texto-atenuado);
+  font-size: var(--texto-xs);
+}
