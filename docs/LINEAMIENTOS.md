@@ -7,12 +7,12 @@
 >
 > Fuente: `docs/time-to-learn-lineamientos.pdf` (convertido a Markdown para versionarlo y consultarlo).
 
-| Ítem        | Definición                                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ítem        | Definición                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Qué es      | Un sitio estático con módulos interactivos: cada protocolo se explica con una simulación paso a paso, el formato real de sus encabezados y un quiz de repaso. |
-| Para quién  | Estudiantes de Redes (la materia actual como primer público). Debe servir para estudiar antes de un parcial y para explicarle un tema a otra persona. |
-| Dónde vive  | Repositorio público en GitHub, publicado con GitHub Pages y desplegado automáticamente en cada cambio a la rama principal.                        |
-| Cómo avanza | En 16 etapas (0 a 15). Cada etapa termina con un release versionado y un sitio funcionando.                                                       |
+| Para quién  | Estudiantes de Redes (la materia actual como primer público). Debe servir para estudiar antes de un parcial y para explicarle un tema a otra persona.         |
+| Dónde vive  | Repositorio público en GitHub, publicado con GitHub Pages y desplegado automáticamente en cada cambio a la rama principal.                                    |
+| Cómo avanza | En 16 etapas (0 a 15). Cada etapa termina con un release versionado y un sitio funcionando.                                                                   |
 
 El nombre juega con el campo TTL (Time To Live) de IPv4: cada módulo completado es un salto más en el recorrido. Repositorio sugerido: `time-to-learn`.
 
@@ -40,14 +40,14 @@ El proyecto busca que una persona pueda ver lo que pasa dentro de una red: qué 
 
 ## 2. Principios pedagógicos
 
-| Principio                    | Qué significa en la práctica                                                                                                                  |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Interacción antes que texto  | Cada concepto se puede manipular: elegir el destino de una trama, desconectar un cable, perder un segmento TCP. El texto acompaña a la simulación, no al revés. |
-| El usuario maneja el ritmo   | Controles de paso: anterior, siguiente, reiniciar, reproducir. Cada paso tiene una explicación de una o dos frases.                           |
-| Bytes reales                 | Los encabezados se muestran con sus campos, tamaños en bits o bytes y valores de ejemplo válidos (MAC, EtherType, TTL, flags TCP).            |
-| Casos «qué pasa si»          | Cada módulo incluye al menos un escenario de falla o borde: colisión, MAC desconocida, VLAN distinta, paquete perdido, nodo oculto.          |
-| Repaso activo                | Quiz corto al final de cada módulo, con explicación de la respuesta correcta.                                                                 |
-| Una idea por pantalla        | Cada sección explica una sola cosa. Si un módulo crece demasiado, se divide.                                                                  |
+| Principio                   | Qué significa en la práctica                                                                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Interacción antes que texto | Cada concepto se puede manipular: elegir el destino de una trama, desconectar un cable, perder un segmento TCP. El texto acompaña a la simulación, no al revés. |
+| El usuario maneja el ritmo  | Controles de paso: anterior, siguiente, reiniciar, reproducir. Cada paso tiene una explicación de una o dos frases.                                             |
+| Bytes reales                | Los encabezados se muestran con sus campos, tamaños en bits o bytes y valores de ejemplo válidos (MAC, EtherType, TTL, flags TCP).                              |
+| Casos «qué pasa si»         | Cada módulo incluye al menos un escenario de falla o borde: colisión, MAC desconocida, VLAN distinta, paquete perdido, nodo oculto.                             |
+| Repaso activo               | Quiz corto al final de cada módulo, con explicación de la respuesta correcta.                                                                                   |
+| Una idea por pantalla       | Cada sección explica una sola cosa. Si un módulo crece demasiado, se divide.                                                                                    |
 
 ---
 
@@ -55,21 +55,21 @@ El proyecto busca que una persona pueda ver lo que pasa dentro de una red: qué 
 
 El criterio general: herramientas estándar de la industria, que se puedan desplegar gratis y que no exijan un servidor. El sitio es estático; toda la lógica corre en el navegador.
 
-| Área                       | Tecnología                                  | Por qué                                                                                                                                  |
-| -------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework del sitio        | Astro                                       | Genera un sitio estático rápido. Permite escribir contenido en MDX y montar componentes interactivos solo donde hacen falta («islas»).   |
-| Componentes interactivos   | React                                       | El estándar más difundido para interfaces. Se usa solo dentro de las simulaciones, no en todo el sitio.                                  |
-| Lenguaje                   | TypeScript (modo estricto)                  | Los formatos de trama y paquete se modelan como tipos; el compilador atrapa errores como un campo de tamaño incorrecto.                  |
-| Contenido                  | MDX + Content Collections de Astro          | Texto en Markdown con componentes embebidos. Los metadatos de cada módulo (orden, capa, fuentes) se validan con un esquema.              |
-| Estilos                    | CSS nativo con variables (tokens) y CSS Modules | Sin dependencias extra. Los tokens definen colores por capa OSI, tipografía y espaciado, con tema claro y oscuro.                     |
-| Gráficos y animación       | SVG generado desde React + Web Animations API | Los diagramas de red y los paquetes en movimiento se dibujan en SVG. Sin librerías de animación pesadas.                               |
-| Tests de lógica            | Vitest                                      | Prueba el motor de simulación: que el switch aprenda la MAC correcta, que el checksum dé lo esperado, etc.                              |
-| Tests de punta a punta     | Playwright                                  | Verifica que cada página cargue y que los controles de las simulaciones respondan.                                                       |
-| Calidad de código          | ESLint, Prettier, `astro check`             | Estilo uniforme y chequeo de tipos en cada cambio.                                                                                       |
-| Gestor de paquetes         | pnpm                                        | Rápido y con lockfile estricto. Node.js en su versión LTS vigente.                                                                       |
-| Integración continua       | GitHub Actions                              | En cada Pull Request: lint, tipos, tests y build. Si algo falla, no se puede mergear.                                                    |
-| Hosting                    | GitHub Pages                                | Gratis, integrado con el repositorio, despliegue automático desde la rama `main`.                                                        |
-| Asistencia de desarrollo   | Claude Code                                 | Implementa cada etapa a partir de este documento y del archivo `CLAUDE.md` del repositorio. Ver sección 9.                              |
+| Área                     | Tecnología                                      | Por qué                                                                                                                                |
+| ------------------------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework del sitio      | Astro                                           | Genera un sitio estático rápido. Permite escribir contenido en MDX y montar componentes interactivos solo donde hacen falta («islas»). |
+| Componentes interactivos | React                                           | El estándar más difundido para interfaces. Se usa solo dentro de las simulaciones, no en todo el sitio.                                |
+| Lenguaje                 | TypeScript (modo estricto)                      | Los formatos de trama y paquete se modelan como tipos; el compilador atrapa errores como un campo de tamaño incorrecto.                |
+| Contenido                | MDX + Content Collections de Astro              | Texto en Markdown con componentes embebidos. Los metadatos de cada módulo (orden, capa, fuentes) se validan con un esquema.            |
+| Estilos                  | CSS nativo con variables (tokens) y CSS Modules | Sin dependencias extra. Los tokens definen colores por capa OSI, tipografía y espaciado, con tema claro y oscuro.                      |
+| Gráficos y animación     | SVG generado desde React + Web Animations API   | Los diagramas de red y los paquetes en movimiento se dibujan en SVG. Sin librerías de animación pesadas.                               |
+| Tests de lógica          | Vitest                                          | Prueba el motor de simulación: que el switch aprenda la MAC correcta, que el checksum dé lo esperado, etc.                             |
+| Tests de punta a punta   | Playwright                                      | Verifica que cada página cargue y que los controles de las simulaciones respondan.                                                     |
+| Calidad de código        | ESLint, Prettier, `astro check`                 | Estilo uniforme y chequeo de tipos en cada cambio.                                                                                     |
+| Gestor de paquetes       | pnpm                                            | Rápido y con lockfile estricto. Node.js en su versión LTS vigente.                                                                     |
+| Integración continua     | GitHub Actions                                  | En cada Pull Request: lint, tipos, tests y build. Si algo falla, no se puede mergear.                                                  |
+| Hosting                  | GitHub Pages                                    | Gratis, integrado con el repositorio, despliegue automático desde la rama `main`.                                                      |
+| Asistencia de desarrollo | Claude Code                                     | Implementa cada etapa a partir de este documento y del archivo `CLAUDE.md` del repositorio. Ver sección 9.                             |
 
 ### Alternativas descartadas
 
@@ -129,16 +129,16 @@ time-to-learn/
 
 ## 5. Flujo de trabajo en GitHub
 
-| Práctica      | Regla                                                                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ramas         | `main` siempre publicable y protegida (no se commitea directo). Cada tarea en una rama: `feat/switch-mac-table`, `fix/tcp-seq-number`, `docs/readme`.          |
-| Pull Requests | Todo cambio entra por PR. La CI tiene que pasar. Aunque trabajes solo, revisá el diff antes de mergear: es donde se detectan errores de Claude Code.          |
-| Commits       | Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`. Ejemplo: «feat(switching): agregar aging de entradas MAC».                    |
-| Issues        | Una issue por tarea concreta. Plantillas para «nuevo módulo», «bug» y «error técnico en el contenido».                                                        |
-| Milestones    | Un milestone por etapa (Etapa 0, Etapa 1, …). Una etapa se cierra cuando todas sus issues están cerradas.                                                     |
-| Tablero       | GitHub Projects con columnas Pendiente / En curso / En revisión / Hecho.                                                                                      |
-| Releases      | Un tag por etapa terminada: v0.1.0 (Etapa 1), v0.2.0 (Etapa 2)… v1.0.0 al cerrar la Etapa 15. Changelog en cada release.                                      |
-| Licencias     | Código bajo MIT. Contenido educativo (textos, diagramas) bajo CC BY-SA 4.0.                                                                                   |
+| Práctica      | Regla                                                                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ramas         | `main` siempre publicable y protegida (no se commitea directo). Cada tarea en una rama: `feat/switch-mac-table`, `fix/tcp-seq-number`, `docs/readme`. |
+| Pull Requests | Todo cambio entra por PR. La CI tiene que pasar. Aunque trabajes solo, revisá el diff antes de mergear: es donde se detectan errores de Claude Code.  |
+| Commits       | Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`. Ejemplo: «feat(switching): agregar aging de entradas MAC».            |
+| Issues        | Una issue por tarea concreta. Plantillas para «nuevo módulo», «bug» y «error técnico en el contenido».                                                |
+| Milestones    | Un milestone por etapa (Etapa 0, Etapa 1, …). Una etapa se cierra cuando todas sus issues están cerradas.                                             |
+| Tablero       | GitHub Projects con columnas Pendiente / En curso / En revisión / Hecho.                                                                              |
+| Releases      | Un tag por etapa terminada: v0.1.0 (Etapa 1), v0.2.0 (Etapa 2)… v1.0.0 al cerrar la Etapa 15. Changelog en cada release.                              |
+| Licencias     | Código bajo MIT. Contenido educativo (textos, diagramas) bajo CC BY-SA 4.0.                                                                           |
 
 ---
 
@@ -146,16 +146,16 @@ time-to-learn/
 
 Todos los módulos siguen la misma plantilla. Esto hace que el sitio se sienta como un todo y que agregar uno nuevo sea mecánico.
 
-| Sección       | Contenido                                                                     | Componente                              |
-| ------------- | ----------------------------------------------------------------------------- | --------------------------------------- |
-| Encabezado    | Nombre, capa OSI (con su color), tiempo estimado de lectura, temas previos recomendados. | `ModuleHeader`               |
-| Idea central  | Dos o tres frases: qué problema resuelve el protocolo.                        | Texto MDX                               |
-| Simulación    | Escenario interactivo paso a paso, con explicación por paso.                  | `Topology` + `StepControls` + `StateTable` |
-| Formato       | Encabezado real con campos, tamaños y un ejemplo con valores válidos.         | `HeaderFormat`                          |
-| Qué pasa si…  | Uno o más escenarios de falla o caso borde.                                   | `WhatIf`                                |
-| Resumen       | Tres a cinco puntos para repasar.                                             | `Callout`                               |
-| Quiz          | Tres a cinco preguntas con explicación.                                       | `Quiz`                                  |
-| Fuentes       | Estándar o RFC y capítulo de la bibliografía de la cátedra.                   | Frontmatter                             |
+| Sección      | Contenido                                                                                | Componente                                 |
+| ------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Encabezado   | Nombre, capa OSI (con su color), tiempo estimado de lectura, temas previos recomendados. | `ModuleHeader`                             |
+| Idea central | Dos o tres frases: qué problema resuelve el protocolo.                                   | Texto MDX                                  |
+| Simulación   | Escenario interactivo paso a paso, con explicación por paso.                             | `Topology` + `StepControls` + `StateTable` |
+| Formato      | Encabezado real con campos, tamaños y un ejemplo con valores válidos.                    | `HeaderFormat`                             |
+| Qué pasa si… | Uno o más escenarios de falla o caso borde.                                              | `WhatIf`                                   |
+| Resumen      | Tres a cinco puntos para repasar.                                                        | `Callout`                                  |
+| Quiz         | Tres a cinco preguntas con explicación.                                                  | `Quiz`                                     |
+| Fuentes      | Estándar o RFC y capítulo de la bibliografía de la cátedra.                              | Frontmatter                                |
 
 ### Precisión técnica
 
@@ -524,25 +524,25 @@ No hacen falta para el día a día. Pueden ser útiles en la Etapa 15 para una r
 
 ## 10. Riesgos y cómo manejarlos
 
-| Riesgo                              | Mitigación                                                                                                          |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Errores técnicos en el contenido    | Fuentes obligatorias por módulo, tests del motor contra ejemplos de referencia y revisión en la Etapa 15.          |
-| El alcance crece sin control        | Cada etapa tiene entregables cerrados. Las ideas nuevas van a issues con la etiqueta «futuro», no a la etapa en curso. |
-| Simulaciones demasiado complejas    | Empezar con el caso feliz, después agregar un «qué pasa si». Declarar simplificaciones.                             |
-| Abandono a mitad de camino          | Cada etapa deja algo publicado y útil. Aunque el proyecto se frene en la Etapa 5, lo hecho sirve para estudiar.     |
-| Código generado que no entendés     | Revisar cada PR. Si una parte no se entiende, pedir que se explique antes de mergear.                               |
+| Riesgo                           | Mitigación                                                                                                             |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Errores técnicos en el contenido | Fuentes obligatorias por módulo, tests del motor contra ejemplos de referencia y revisión en la Etapa 15.              |
+| El alcance crece sin control     | Cada etapa tiene entregables cerrados. Las ideas nuevas van a issues con la etiqueta «futuro», no a la etapa en curso. |
+| Simulaciones demasiado complejas | Empezar con el caso feliz, después agregar un «qué pasa si». Declarar simplificaciones.                                |
+| Abandono a mitad de camino       | Cada etapa deja algo publicado y útil. Aunque el proyecto se frene en la Etapa 5, lo hecho sirve para estudiar.        |
+| Código generado que no entendés  | Revisar cada PR. Si una parte no se entiende, pedir que se explique antes de mergear.                                  |
 
 ---
 
 ## 11. Decisiones tomadas
 
-| Decisión          | Resultado                                                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Nombre            | TimeToLearn (TTL). Repositorio: `time-to-learn`.                                                                                |
-| Inicio            | Carpeta local con git inicializado; se sube a GitHub cuando haga falta publicar.                                                |
-| Visibilidad       | Público al subirlo, porque GitHub Pages gratuito lo requiere. Claude Code funciona igual con repositorios privados o solo locales. |
-| Bibliografía      | Stallings, más los apuntes en Notion y los PDFs de la cátedra (en `fuentes/`, fuera de git).                                    |
-| Orden de módulos  | El de la sección 8, confirmado.                                                                                                 |
+| Decisión         | Resultado                                                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Nombre           | TimeToLearn (TTL). Repositorio: `time-to-learn`.                                                                                   |
+| Inicio           | Carpeta local con git inicializado; se sube a GitHub cuando haga falta publicar.                                                   |
+| Visibilidad      | Público al subirlo, porque GitHub Pages gratuito lo requiere. Claude Code funciona igual con repositorios privados o solo locales. |
+| Bibliografía     | Stallings, más los apuntes en Notion y los PDFs de la cátedra (en `fuentes/`, fuera de git).                                       |
+| Orden de módulos | El de la sección 8, confirmado.                                                                                                    |
 
 ### Pendiente
 
