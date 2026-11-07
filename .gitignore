@@ -1,0 +1,40 @@
+# Material con derechos de autor (cátedra y editorial): NUNCA se commitea
+fuentes/
+
+# PDF original de lineamientos (se versiona docs/LINEAMIENTOS.md)
+docs/time-to-learn-lineamientos.pdf
+
+# Dependencias
+node_modules/
+
+# Build y caché de Astro
+dist/
+.astro/
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Configuración local de Claude Code
+.claude/settings.local.json
