@@ -1,0 +1,115 @@
+/* El desplazamiento horizontal queda dentro del diagrama, nunca en la página. */
+.desplazable {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-radius: var(--radio-chico);
+}
+
+/*
+ * Escala con el ancho disponible, entre un mínimo legible (el texto no queda más chico que
+ * sus tokens) y un máximo. --ancho-diagrama es el ancho del viewBox, sin unidad.
+ */
+.diagrama {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  min-inline-size: calc(var(--ancho-diagrama) * var(--escala-diagrama-min));
+  max-inline-size: calc(var(--ancho-diagrama) * var(--escala-diagrama-max));
+  margin-inline: auto;
+  font-family: var(--fuente-texto);
+}
+
+/* ── Medio físico ── */
+.bajada,
+.medio,
+.medioActivo {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bajada {
+  stroke: var(--color-borde);
+  stroke-width: var(--borde-grueso);
+}
+
+/* Sin bits: fino y punteado. Con bits o resaltado: sólido, más grueso y con el color de foco. */
+.medio {
+  stroke: var(--color-borde);
+  stroke-width: var(--borde-grueso);
+  stroke-dasharray: var(--espacio-2) var(--espacio-1);
+}
+
+.medioActivo {
+  stroke: var(--color-foco);
+  stroke-width: var(--borde-capa);
+}
+
+/* ── Columnas ── */
+.etiqueta {
+  fill: var(--color-texto);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-negrita);
+}
+
+.tipo {
+  fill: var(--color-texto-atenuado);
+  font-size: var(--texto-xs);
+}
+
+/* Colores de capa por data-capa (tokens.css). */
+.fondo {
+  fill: var(--capa-fondo);
+  stroke: var(--capa-borde);
+  stroke-width: var(--borde-fino);
+}
+
+.franja {
+  fill: var(--capa-borde);
+}
+
+.numero {
+  fill: var(--capa-borde);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-negrita);
+}
+
+.nombre {
+  fill: var(--color-texto);
+  font-size: var(--texto-sm);
+}
+
+.actual .nombre {
+  font-weight: var(--peso-negrita);
+}
+
+/* ── Marca de la PDU ── */
+.borde {
+  fill: none;
+  stroke: var(--color-texto);
+  stroke-width: var(--borde-capa);
+}
+
+.pestana {
+  fill: var(--color-texto);
+}
+
+.textoPestana {
+  fill: var(--color-fondo);
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-negrita);
+}
+
+.ficha {
+  fill: var(--color-superficie);
+  stroke: var(--color-texto);
+  stroke-width: var(--borde-grueso);
+}
+
+.textoFicha {
+  fill: var(--color-texto);
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-semi);
+}

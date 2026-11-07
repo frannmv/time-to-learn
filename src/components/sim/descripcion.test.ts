@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { Paquete, Topologia } from '../../engine/core/timeline';
 import { simularDemo, TOPOLOGIA_DEMO } from '../../engine/demo/escenario';
-import { describirPaquete, describirPaso, describirTopologia, enumerar } from './descripcion';
+import { simularPilaDemo, TOPOLOGIA_PILA_DEMO } from '../../engine/demo/pila';
+import {
+  describirCapas,
+  describirPaquete,
+  describirPaso,
+  describirPasoEnPila,
+  describirPilas,
+  describirTopologia,
+  enumerar,
+} from './descripcion';
 
 describe('enumerar', () => {
   it('une listas en español', () => {
@@ -97,6 +106,46 @@ describe('describirPaso', () => {
     if (primero === undefined) throw new Error('el demo no tiene pasos');
     expect(describirPaso({ ...primero, paquetes: [] }, TOPOLOGIA_DEMO)).toBe(
       'No hay paquetes en este paso.',
+    );
+  });
+});
+
+describe('vista de pila', () => {
+  const pila = simularPilaDemo();
+
+  it('describirCapas usa rangos y avisa los huecos', () => {
+    expect(describirCapas([1])).toBe('capa 1');
+    expect(describirCapas([1, 2, 3])).toBe('capas 1 a 3');
+    expect(describirCapas([1, 2, 4])).toBe('capas 1, 2 y 4');
+  });
+
+  it('describirPilas dice la pila de cada equipo, o que no la declara', () => {
+    expect(describirPilas(TOPOLOGIA_PILA_DEMO.nodos)).toBe(
+      'Pila de cada equipo: A (host), capas 1 a 4; B (router), capas 1 a 3; C (host), capas 1 a 4.',
+    );
+    expect(describirPilas(TOPOLOGIA_DEMO.nodos.slice(0, 1))).toBe(
+      'Pila de cada equipo: A (host), sin pila declarada.',
+    );
+    expect(describirPilas([])).toBe('Sin equipos.');
+  });
+
+  it('describirPasoEnPila dice equipo, capa y PDU', () => {
+    const texto = (i: number) => {
+      const paso = pila.pasos[i];
+      if (paso === undefined) throw new Error(`falta el paso ${i}`);
+      return describirPasoEnPila(paso, pila.topologia);
+    };
+    expect(texto(2)).toBe('Trama de juguete en la capa 2 (Enlace de datos) de A.');
+    expect(texto(4)).toBe('Bits de juguete sobre el enlace de A hacia B.');
+    expect(texto(7)).toBe('Paquete de juguete en la capa 3 (Red) de B.');
+  });
+
+  it('sin capa ni nombre de PDU, dice «PDU» y el equipo', () => {
+    const paso = simularDemo().pasos[0];
+    if (paso === undefined) throw new Error('falta el paso');
+    expect(describirPasoEnPila(paso, TOPOLOGIA_DEMO)).toBe('PDU en A.');
+    expect(describirPasoEnPila({ ...paso, paquetes: [] }, TOPOLOGIA_DEMO)).toBe(
+      'No hay PDU en este paso.',
     );
   });
 });
