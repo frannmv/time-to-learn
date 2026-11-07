@@ -7,8 +7,31 @@ un quiz de repaso.
 El nombre juega con el campo TTL (Time To Live) de IPv4: cada módulo completado es un salto
 más en el recorrido.
 
-> **Estado:** Etapa 0 (fundaciones del repositorio). El primer módulo llega en la Etapa 2.
-> Hoja de ruta completa en [docs/LINEAMIENTOS.md](docs/LINEAMIENTOS.md#8-etapas-de-implementación).
+> **Estado:** versión 0.1.0, Etapa 1 terminada (sistema base y componentes compartidos). El
+> primer módulo llega en la Etapa 2. Sitio publicado en <https://frannmv.github.io/time-to-learn/>.
+> Hoja de ruta completa en [docs/LINEAMIENTOS.md](docs/LINEAMIENTOS.md#8-etapas-de-implementación);
+> cambios por versión en [CHANGELOG.md](CHANGELOG.md).
+
+## Qué incluye hoy
+
+Todavía no hay módulos de estudio: el sitio tiene la estructura y las piezas con las que se
+van a armar.
+
+- **Navegación:** inicio con el índice de módulos por bloque, vista por capa OSI (`/capas/`) y
+  un indicador de progreso TTL que cuenta los módulos completados en este navegador.
+- **Plantilla de módulo:** encabezado, idea central, simulación, formato del encabezado,
+  «¿qué pasa si…?», resumen, quiz y fuentes. El módulo oculto `/modulos/ejemplo/` la muestra
+  completa.
+- **Componentes:** simulación paso a paso (topología en SVG, paquete como pila de
+  encabezados, tabla de estado y controles con teclado), formato de encabezado campo por
+  campo y bit por bit, quiz que guarda el mejor puntaje, recuadros de resumen, nota,
+  simplificación y advertencia.
+- **Motor de simulación:** TypeScript puro con línea de tiempo de pasos, utilidades de bytes y
+  checksum de Internet (RFC 1071).
+- **Para todos:** tema claro y oscuro según el sistema, uso completo con teclado, diseño para
+  celular desde 360 px y movimiento reducido.
+- **Página interna `/demo/`:** muestra cada componente con datos de ejemplo; no está enlazada
+  desde el sitio.
 
 ## Para quién
 
