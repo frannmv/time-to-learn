@@ -274,6 +274,164 @@ test.describe('demostración: simulación', () => {
   });
 });
 
+/** Explicaciones de la variante ficticia «B descarta el mensaje» (simularDescarteDemo). */
+const EXPLICACION_DESCARTE = {
+  0: /Esta variante también es ficticia/,
+  1: /El mensaje viaja por el enlace de A hacia B/,
+  3: /B descarta el mensaje.*Fin de la variante ficticia/,
+} as const;
+
+const selector = (simulacion: Locator) => ({
+  grupo: simulacion.getByRole('group', { name: 'Escenario' }),
+  entrega: simulacion.getByRole('radio', { name: 'Entrega a C' }),
+  descarte: simulacion.getByRole('radio', { name: 'B descarta el mensaje' }),
+  actual: simulacion.getByTestId('escenario-actual'),
+});
+
+test.describe('demostración: escenarios', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('demo/');
+  });
+
+  test('el selector va arriba de los controles y dice en texto qué escenario se ve', async ({
+    page,
+  }) => {
+    const simulacion = await abrirSimulacion(page);
+    const e = selector(simulacion);
+    const s = partes(simulacion);
+
+    await expect(e.grupo).toBeVisible();
+    await expect(e.entrega).toBeChecked();
+    await expect(e.actual).toHaveText('Mostrando: Entrega a C');
+    const cajaSelector = await e.grupo.boundingBox();
+    const cajaControles = await simulacion
+      .getByRole('group', { name: 'Controles de la simulación' })
+      .boundingBox();
+    expect(cajaSelector?.y).toBeLessThan(cajaControles?.y ?? 0);
+    // Al cargar no se anuncia ningún escenario: solo la explicación del paso.
+    await expect(s.explicacion).toHaveText(EXPLICACION[0]);
+    await expect(s.explicacion).not.toContainText('Escenario «');
+  });
+
+  test('cambiar de escenario vuelve al paso 1 y cambia la explicación', async ({ page }) => {
+    const simulacion = await abrirSimulacion(page);
+    const e = selector(simulacion);
+    const s = partes(simulacion);
+
+    await s.siguiente.click();
+    await s.siguiente.click();
+    await expect(s.contador).toHaveText('Paso 3 de 6');
+
+    await e.descarte.check();
+    await expect(s.contador).toHaveText('Paso 1 de 4');
+    await expect(s.explicacion).toContainText(EXPLICACION_DESCARTE[0]);
+    await expect(e.actual).toHaveText('Mostrando: B descarta el mensaje');
+
+    // La navegación respeta el nuevo total, y en el último paso ya no hay paquete.
+    for (let i = 0; i < 3; i++) await s.siguiente.click();
+    await expect(s.contador).toHaveText('Paso 4 de 4');
+    await expect(s.siguiente).toBeDisabled();
+    await expect(s.explicacion).toHaveText(EXPLICACION_DESCARTE[3]);
+    await expect(s.paquete).toHaveCount(0);
+
+    await e.entrega.check();
+    await expect(s.contador).toHaveText('Paso 1 de 6');
+    await expect(s.explicacion).toContainText(EXPLICACION[0]);
+  });
+
+  test('el cambio se anuncia en la región de la explicación hasta cambiar de paso', async ({
+    page,
+  }) => {
+    const simulacion = await abrirSimulacion(page);
+    const e = selector(simulacion);
+    const s = partes(simulacion);
+
+    await e.descarte.check();
+    await expect(s.explicacion).toHaveAttribute('aria-live', 'polite');
+    await expect(s.explicacion).toContainText('Escenario «B descarta el mensaje», paso 1 de 4.');
+
+    await s.siguiente.click();
+    await expect(s.explicacion).toHaveText(EXPLICACION_DESCARTE[1]);
+    await expect(s.explicacion).not.toContainText('Escenario «');
+
+    // Al volver al paso 1 con los controles no se repite el anuncio del escenario.
+    await s.anterior.click();
+    await expect(s.explicacion).not.toContainText('Escenario «');
+  });
+
+  test('cambiar de escenario durante la reproducción la pausa', async ({ page }) => {
+    const simulacion = await abrirSimulacion(page);
+    const e = selector(simulacion);
+    const s = partes(simulacion);
+
+    await s.reproducir.click();
+    await expect(s.reproducir).toHaveText('Pausar');
+    await e.descarte.check();
+    await expect(s.reproducir).toHaveText('Reproducir');
+    await page.waitForTimeout(INTERVALO_MS + 500);
+    await expect(s.contador).toHaveText('Paso 1 de 4');
+  });
+
+  test('dentro del selector, las flechas y espacio no cambian de paso', async ({ page }) => {
+    const simulacion = await abrirSimulacion(page);
+    const e = selector(simulacion);
+    const s = partes(simulacion);
+
+    await s.siguiente.click();
+    await s.siguiente.click();
+    await e.entrega.focus();
+    await page.keyboard.press('ArrowRight');
+    // La flecha hizo lo nativo (marcar el otro radio) y no avanzó un paso.
+    await expect(e.descarte).toBeChecked();
+    await expect(e.descarte).toBeFocused();
+    await expect(s.contador).toHaveText('Paso 1 de 4');
+
+    await page.keyboard.press(' ');
+    await expect(s.reproducir).toHaveText('Reproducir');
+    await expect(s.contador).toHaveText('Paso 1 de 4');
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(e.entrega).toBeChecked();
+    await expect(s.contador).toHaveText('Paso 1 de 6');
+  });
+
+  test('con el foco en el resto de la simulación, los atajos siguen funcionando', async ({
+    page,
+  }) => {
+    const simulacion = await abrirSimulacion(page);
+    const e = selector(simulacion);
+    const s = partes(simulacion);
+
+    await e.descarte.check();
+    await simulacion.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(s.contador).toHaveText('Paso 2 de 4');
+    await page.keyboard.press('ArrowLeft');
+    await expect(s.contador).toHaveText('Paso 1 de 4');
+    await page.keyboard.press(' ');
+    await expect(s.reproducir).toHaveText('Pausar');
+    await page.keyboard.press(' ');
+    await expect(s.reproducir).toHaveText('Reproducir');
+  });
+
+  test('es accesible y no desborda la página con el otro escenario', async ({ page }) => {
+    const simulacion = await abrirSimulacion(page);
+    await selector(simulacion).descarte.check();
+    await partes(simulacion).siguiente.click();
+    await revisarAccesibilidad(page, '[aria-labelledby="simulacion"]');
+    await sinScrollHorizontal(page);
+  });
+});
+
+test('una simulación con una sola timeline no muestra selector de escenarios', async ({ page }) => {
+  await page.goto('modulos/ejemplo/');
+  const simulacion = page.getByRole('region', { name: /^Simulación de ejemplo/ });
+  await simulacion.scrollIntoViewIfNeeded();
+  await expect(simulacion.getByText(/^Paso 1 de \d+$/)).toBeVisible();
+  await expect(simulacion.getByRole('radio')).toHaveCount(0);
+  await expect(simulacion.getByRole('group', { name: 'Escenario' })).toHaveCount(0);
+});
+
 test.describe('demostración: movimiento del paquete', () => {
   test.beforeEach(async ({ page }) => {
     await contarAnimaciones(page);

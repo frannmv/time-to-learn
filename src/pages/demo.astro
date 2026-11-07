@@ -17,7 +17,7 @@ import type { ModuloRecorrido } from '../lib/recorrido';
 import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 import Simulation from '../components/sim/Simulation';
-import { simularDemo } from '../engine/demo/escenario';
+import { simularDemo, simularDescarteDemo } from '../engine/demo/escenario';
 import Pdu from '../components/sim/Pdu';
 import { simularPilaDemo } from '../engine/demo/pila';
 import HeaderFormat from '../components/headers/HeaderFormat';
@@ -58,6 +58,8 @@ const visibles = await obtenerModulos();
 
 // Piezas 1.5 y 1.6: la línea de tiempo se calcula en el build y llega como props a la isla.
 const timelineDemo = simularDemo();
+// Pieza 2.4: una variante ficticia más corta para probar el selector de escenarios.
+const timelineDescarte = simularDescarteDemo();
 
 // Pieza 2.3: escenario ficticio propio para la vista de pila y una PDU estática (sin isla).
 const timelinePila = simularPilaDemo();
@@ -238,11 +240,15 @@ const recorridoDemo: ModuloRecorrido[] = [
         Escenario ficticio de tres nodos (A, B y C): no representa ningún protocolo real. Sirve para
         probar los controles de paso, el diagrama de la topología con el paquete y la tabla de
         estado. En el último paso el paquete lleva el nombre de su PDU, tamaños y una cola, todos
-        inventados («[Ejemplo]»).
+        inventados («[Ejemplo]»). El selector cambia a una variante más corta, también ficticia, en
+        la que B descarta el mensaje en lugar de reenviarlo.
       </p>
       <Simulation
         client:visible
-        timeline={timelineDemo}
+        escenarios={[
+          { id: 'entrega', etiqueta: 'Entrega a C', timeline: timelineDemo },
+          { id: 'descarte', etiqueta: 'B descarta el mensaje', timeline: timelineDescarte },
+        ]}
         titulo="Simulación de demostración"
         vistas={['topologia', 'tablas']}
       />

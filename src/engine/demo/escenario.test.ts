@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { longitudTotal, partesEnElCable } from '../core/pdu';
 import { validarTimeline } from '../core/timeline';
-import { BYTES_COLA_DEMO, BYTES_ENCABEZADO_DEMO, ESCENARIO_DEMO, simularDemo } from './escenario';
+import {
+  BYTES_COLA_DEMO,
+  BYTES_ENCABEZADO_DEMO,
+  ESCENARIO_DEMO,
+  simularDemo,
+  simularDescarteDemo,
+} from './escenario';
 
 describe('escenario de demostración (ficticio)', () => {
   it('es determinístico: dos ejecuciones producen la misma timeline', () => {
@@ -90,6 +96,54 @@ describe('escenario de demostración (ficticio)', () => {
 
   it('sobrevive la ida y vuelta por JSON', () => {
     const timeline = simularDemo();
+    expect(JSON.parse(JSON.stringify(timeline))).toStrictEqual(structuredClone(timeline));
+  });
+});
+
+describe('variante ficticia: B descarta el mensaje', () => {
+  it('es determinística y produce una timeline válida de cuatro pasos', () => {
+    const timeline = simularDescarteDemo();
+    expect(timeline).toStrictEqual(simularDescarteDemo());
+    expect(validarTimeline(timeline)).toEqual([]);
+    expect(timeline.pasos).toHaveLength(4);
+  });
+
+  it('tiene otra cantidad de pasos que el escenario principal, sobre la misma topología', () => {
+    expect(simularDescarteDemo().pasos.length).not.toBe(simularDemo().pasos.length);
+    expect(simularDescarteDemo().topologia).toStrictEqual(simularDemo().topologia);
+  });
+
+  it('el mensaje llega a B y después desaparece: nunca llega a C', () => {
+    const ubicaciones = simularDescarteDemo().pasos.map((paso) => paso.paquetes[0]?.ubicacion);
+    expect(ubicaciones).toEqual([
+      { tipo: 'nodo', nodo: 'a' },
+      { tipo: 'enlace', enlace: 'a-b', desde: 'a', hacia: 'b' },
+      { tipo: 'nodo', nodo: 'b' },
+      undefined,
+    ]);
+  });
+
+  it('B anota el mensaje antes de descartarlo', () => {
+    const filas = simularDescarteDemo().pasos.map((paso) => paso.tablas[0]?.filas);
+    expect(filas[2]).toEqual([{ celdas: ['Hola, C', 'A', 'C'], marca: 'nueva' }]);
+    expect(filas[3]).toEqual([{ celdas: ['Hola, C', 'A', 'C'] }]);
+  });
+
+  it('declara que es ficticia y explica el descarte', () => {
+    const pasos = simularDescarteDemo().pasos;
+    expect(pasos[0]?.explicacion).toMatch(/ficticia/);
+    expect(pasos[0]?.paquetes[0]?.encabezados[0]?.nombre).toMatch(/ficticio/);
+    expect(pasos[3]?.explicacion).toMatch(/descarta/);
+  });
+
+  it('/demo/ la usa sin parámetros', () => {
+    const texto = readFileSync(new URL('../../pages/demo.astro', import.meta.url), 'utf8');
+    expect(texto).toMatch(/simularDescarteDemo\(\)/);
+    expect(texto).not.toMatch(/simularDescarteDemo\([^)]/);
+  });
+
+  it('sobrevive la ida y vuelta por JSON', () => {
+    const timeline = simularDescarteDemo();
     expect(JSON.parse(JSON.stringify(timeline))).toStrictEqual(structuredClone(timeline));
   });
 });
