@@ -1,6 +1,26 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { revisarAccesibilidad, sinScrollHorizontal } from './ayudas';
 
+type VentanaConConteo = Window & { animacionesCreadas?: number };
+
+/** Cuenta las llamadas a Element.animate. Hay que llamarla antes de `page.goto`. */
+async function contarAnimaciones(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const ventana = window as VentanaConConteo;
+    const original = Element.prototype.animate;
+    ventana.animacionesCreadas = 0;
+    Element.prototype.animate = function (this: Element, ...args) {
+      ventana.animacionesCreadas = (ventana.animacionesCreadas ?? 0) + 1;
+      return original.apply(this, args);
+    };
+  });
+}
+
+const animacionesCreadas = (page: Page) =>
+  page.evaluate(() => (window as VentanaConConteo).animacionesCreadas ?? 0);
+
+const animacionesEnCurso = (page: Page) => page.evaluate(() => document.getAnimations().length);
+
 /** Debe coincidir con INTERVALO_REPRODUCCION_MS de Simulation.tsx. */
 const INTERVALO_MS = 2000;
 
@@ -34,6 +54,9 @@ const partes = (simulacion: Locator) => ({
   contador: simulacion.getByText(/^Paso \d+ de \d+$/),
   explicacion: simulacion.locator('[aria-live="polite"]'),
   tabla: simulacion.getByRole('table', { name: 'Registro de B' }),
+  diagrama: simulacion.getByRole('region', { name: 'Diagrama de la topología' }),
+  topologia: simulacion.getByRole('img', { name: 'Topología' }),
+  paquete: simulacion.locator('[data-paquete="mensaje"]'),
 });
 
 test.describe('demostración: simulación', () => {
@@ -159,6 +182,56 @@ test.describe('demostración: simulación', () => {
     await expect(fila).not.toContainText('nueva');
   });
 
+  test('al avanzar, el paquete cambia de nodo o de enlace', async ({ page }) => {
+    const s = partes(await abrirSimulacion(page));
+
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'nodo:a');
+    await s.siguiente.click();
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'enlace:a-b');
+    await s.siguiente.click();
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'nodo:b');
+    await s.anterior.click();
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'enlace:a-b');
+  });
+
+  test('el paquete muestra el nombre de su encabezado y de su capa', async ({ page }) => {
+    const s = partes(await abrirSimulacion(page));
+    const encabezado = s.paquete.locator('[data-capa="7"]');
+    await expect(encabezado).toContainText('Mensaje de juguete (ficticio)');
+    await expect(encabezado).toContainText('Capa 7 · Aplicación');
+  });
+
+  test('lo resaltado del paso se marca en el diagrama', async ({ page }) => {
+    const s = partes(await abrirSimulacion(page));
+    const nodoA = s.topologia.locator('[data-nodo="a"]');
+    const enlaceAB = s.topologia.locator('[data-enlace="a-b"]');
+
+    await expect(nodoA).toHaveAttribute('data-resaltado', 'true');
+    await expect(enlaceAB).not.toHaveAttribute('data-resaltado');
+
+    await s.siguiente.click();
+    await expect(nodoA).not.toHaveAttribute('data-resaltado');
+    await expect(enlaceAB).toHaveAttribute('data-resaltado', 'true');
+  });
+
+  test('la descripción del diagrama dice la topología y dónde está el paquete', async ({
+    page,
+  }) => {
+    const s = partes(await abrirSimulacion(page));
+    await expect(s.topologia).toHaveAccessibleDescription(
+      /3 nodos: A \(host\), B \(router\) y C \(host\)\..*: en A\.$/,
+    );
+    await s.siguiente.click();
+    await expect(s.topologia).toHaveAccessibleDescription(/sobre el enlace de A hacia B\.$/);
+  });
+
+  test('las flechas no cambian de paso con el foco en el diagrama', async ({ page }) => {
+    const s = partes(await abrirSimulacion(page));
+    await s.diagrama.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(s.contador).toHaveText('Paso 1 de 5');
+  });
+
   test('es accesible y no desborda la página', async ({ page }) => {
     const s = partes(await abrirSimulacion(page));
     await s.siguiente.click();
@@ -166,6 +239,63 @@ test.describe('demostración: simulación', () => {
     await revisarAccesibilidad(page, '[aria-labelledby="simulacion"]');
     await sinScrollHorizontal(page);
   });
+});
+
+test.describe('demostración: movimiento del paquete', () => {
+  test.beforeEach(async ({ page }) => {
+    await contarAnimaciones(page);
+    await page.goto('demo/');
+  });
+
+  test('se desplaza solo al avanzar un paso', async ({ page }) => {
+    const s = partes(await abrirSimulacion(page));
+
+    await s.siguiente.click();
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'enlace:a-b');
+    expect(await animacionesCreadas(page)).toBe(1);
+
+    // Retroceder y reiniciar cambian de lugar sin desplazar.
+    await s.anterior.click();
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'nodo:a');
+    await s.siguiente.click();
+    await s.siguiente.click();
+    expect(await animacionesCreadas(page)).toBe(3);
+    await s.reiniciar.click();
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'nodo:a');
+    expect(await animacionesCreadas(page)).toBe(3);
+    expect(await animacionesEnCurso(page)).toBe(0);
+  });
+
+  test.describe('con movimiento reducido', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('no hay animaciones después de avanzar', async ({ page }) => {
+      const s = partes(await abrirSimulacion(page));
+
+      await s.siguiente.click();
+      await expect(s.paquete).toHaveAttribute('data-ubicacion', 'enlace:a-b');
+      expect(await animacionesEnCurso(page)).toBe(0);
+      await s.siguiente.click();
+      await expect(s.paquete).toHaveAttribute('data-ubicacion', 'nodo:b');
+      expect(await animacionesEnCurso(page)).toBe(0);
+      expect(await animacionesCreadas(page)).toBe(0);
+    });
+  });
+});
+
+test('en celular el diagrama se desplaza dentro de su contenedor, no la página', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'celular', 'solo aplica al ancho de 360 px');
+  await page.goto('demo/');
+  const s = partes(await abrirSimulacion(page));
+
+  await sinScrollHorizontal(page);
+  const { ancho, visible } = await s.diagrama.evaluate((el) => ({
+    ancho: el.scrollWidth,
+    visible: el.clientWidth,
+  }));
+  expect(ancho).toBeGreaterThan(visible);
 });
 
 test('el inicio no tiene simulaciones y no carga React', async ({ page }) => {

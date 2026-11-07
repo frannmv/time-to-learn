@@ -15,6 +15,8 @@ import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 import Simulation from '../components/sim/Simulation';
 import { simularDemo } from '../engine/demo/escenario';
+import HeaderFormat from '../components/headers/HeaderFormat';
+import { ENCABEZADO_IPV4 } from '../engine/demo/encabezado-ipv4';
 
 // Nombres de las capas del modelo OSI (ISO/IEC 7498-1). Cuando exista el catálogo del motor
 // (src/engine/core/capas.ts, pieza 1.2), esta lista se toma de ahí.
@@ -49,7 +51,7 @@ const duraciones = ['rapida', 'media', 'lenta'];
 const modulos = await obtenerTodosLosModulos();
 const visibles = await obtenerModulos();
 
-// Pieza 1.5: la línea de tiempo se calcula en el build y llega como props a la isla.
+// Piezas 1.5 y 1.6: la línea de tiempo se calcula en el build y llega como props a la isla.
 const timelineDemo = simularDemo();
 
 // Pieza 1.8: preguntas sobre el escenario ficticio de la simulación de demostración. El id
@@ -214,14 +216,24 @@ const preguntasDemo: PreguntaQuiz[] = [
       <h2 id="simulacion">Simulación</h2>
       <p class="atenuado">
         Escenario ficticio de tres nodos (A, B y C): no representa ningún protocolo real. Sirve para
-        probar los controles de paso y la tabla de estado.
+        probar los controles de paso, el diagrama de la topología con el paquete y la tabla de
+        estado.
       </p>
       <Simulation
         client:visible
         timeline={timelineDemo}
         titulo="Simulación de demostración"
-        vistas={['tablas']}
+        vistas={['topologia', 'tablas']}
       />
+    </section>
+
+    <section aria-labelledby="formato">
+      <h2 id="formato">Formato</h2>
+      <p class="atenuado">
+        Encabezado IPv4 de 20 bytes según RFC 791 §3.1, sin opciones. Las direcciones son de
+        documentación (RFC 5737) y el checksum lo calcula el motor.
+      </p>
+      <HeaderFormat client:visible encabezado={ENCABEZADO_IPV4} />
     </section>
 
     <section aria-labelledby="callout">

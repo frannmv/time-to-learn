@@ -7,17 +7,19 @@
  *
  * Teclado (decisión transversal 10): con el foco dentro de la simulación, ← y → cambian de
  * paso y espacio reproduce o pausa. Espacio sobre un botón conserva su comportamiento
- * normal (presiona ese botón), y las flechas dentro de una tabla desplazable la desplazan.
+ * normal (presiona ese botón), y las flechas dentro de una tabla o un diagrama desplazable
+ * lo desplazan.
  */
 import { useEffect, useId, useReducer, type KeyboardEvent } from 'react';
 import type { Timeline } from '../../engine/core/timeline';
 import StateTable from './StateTable';
 import StepControls from './StepControls';
+import Topology from './Topology';
 import { crearEstado, stepper } from './stepper';
 import estilos from './Simulation.module.css';
 
-/** Vistas que la isla sabe dibujar. La pieza 1.6 agrega la topología. */
-export type Vista = 'tablas';
+/** Vistas que la isla sabe dibujar: el diagrama de la topología y las tablas de estado. */
+export type Vista = 'topologia' | 'tablas';
 
 /** Tiempo que se muestra cada paso durante la reproducción automática. */
 export const INTERVALO_REPRODUCCION_MS = 2000;
@@ -29,7 +31,7 @@ interface Props {
   readonly vistas?: readonly Vista[];
 }
 
-export default function Simulation({ timeline, titulo, vistas = ['tablas'] }: Props) {
+export default function Simulation({ timeline, titulo, vistas = ['topologia', 'tablas'] }: Props) {
   const [estado, despachar] = useReducer(stepper, timeline.pasos.length, crearEstado);
   const idAyuda = useId();
   const paso = timeline.pasos[estado.indice];
@@ -70,6 +72,8 @@ export default function Simulation({ timeline, titulo, vistas = ['tablas'] }: Pr
       onKeyDown={alPresionarTecla}
     >
       <StepControls estado={estado} alAccionar={despachar} />
+
+      {vistas.includes('topologia') && <Topology timeline={timeline} paso={paso} />}
 
       <p className={estilos.explicacion} aria-live="polite" aria-atomic="true">
         {paso.explicacion}

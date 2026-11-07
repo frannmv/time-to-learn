@@ -1,0 +1,28 @@
+/*
+ * Colores de capa por data-capa (tokens.css). Una fila sin capa (paquete sin encabezados)
+ * usa los colores neutros.
+ */
+.fondo {
+  fill: var(--capa-fondo, var(--color-superficie));
+  stroke: var(--capa-borde, var(--color-borde));
+  stroke-width: var(--borde-fino);
+}
+
+.franja {
+  fill: var(--capa-borde, var(--color-borde));
+}
+
+.nombre,
+.capa {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+}
+
+.nombre {
+  fill: var(--color-texto);
+  font-weight: var(--peso-semi);
+}
+
+.capa {
+  fill: var(--capa-borde, var(--color-texto-atenuado));
+}
