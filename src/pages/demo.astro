@@ -46,7 +46,7 @@ const duraciones = ['rapida', 'media', 'lenta'];
 const modulos = await obtenerTodosLosModulos();
 const visibles = await obtenerModulos();
 
-// Pieza 1.5: la línea de tiempo se calcula en el build y llega como props a la isla.
+// Piezas 1.5 y 1.6: la línea de tiempo se calcula en el build y llega como props a la isla.
 const timelineDemo = simularDemo();
 ---
 
@@ -183,13 +183,14 @@ const timelineDemo = simularDemo();
       <h2 id="simulacion">Simulación</h2>
       <p class="atenuado">
         Escenario ficticio de tres nodos (A, B y C): no representa ningún protocolo real. Sirve para
-        probar los controles de paso y la tabla de estado.
+        probar los controles de paso, el diagrama de la topología con el paquete y la tabla de
+        estado.
       </p>
       <Simulation
         client:visible
         timeline={timelineDemo}
         titulo="Simulación de demostración"
-        vistas={['tablas']}
+        vistas={['topologia', 'tablas']}
       />
     </section>
 
