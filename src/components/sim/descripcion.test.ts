@@ -43,6 +43,35 @@ describe('describirPaquete', () => {
     ).toBe('Paquete con Ethernet II (capa 2, Enlace de datos) y IPv4 (capa 3, Red): en B.');
   });
 
+  it('con PDU y capa, dice el nombre de la PDU y en qué capa de qué nodo está', () => {
+    const segmento: Paquete = {
+      id: 's',
+      ubicacion: { tipo: 'nodo', nodo: 'a', capa: 4 },
+      pdu: 'Segmento TCP',
+      encabezados: [{ capa: 4, nombre: 'TCP', campos: [] }],
+    };
+    expect(describirPaquete(segmento, TOPOLOGIA_DEMO)).toBe(
+      'Segmento TCP con TCP (capa 4, Transporte): en la capa 4 de A.',
+    );
+  });
+
+  it('nombra las colas como colas y en el orden del cable', () => {
+    const trama: Paquete = {
+      id: 't',
+      ubicacion: { tipo: 'nodo', nodo: 'b' },
+      pdu: 'Trama Ethernet',
+      encabezados: [
+        { capa: 2, nombre: 'Ethernet II', campos: [] },
+        { capa: 2, nombre: 'FCS', campos: [], parte: 'cola' },
+        { capa: 3, nombre: 'IPv4', campos: [] },
+      ],
+      datos: { descripcion: '[Ejemplo] Carga' },
+    };
+    expect(describirPaquete(trama, TOPOLOGIA_DEMO)).toBe(
+      'Trama Ethernet con Ethernet II (capa 2, Enlace de datos), IPv4 (capa 3, Red) y FCS (cola de la capa 2, Enlace de datos): en B.',
+    );
+  });
+
   it('dice el sentido cuando está sobre un enlace', () => {
     const paquete: Paquete = {
       ...base,

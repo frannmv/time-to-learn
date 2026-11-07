@@ -205,6 +205,129 @@ describe('validarTimeline', () => {
   });
 });
 
+describe('validarTimeline: PDU, tamaños y pila por nodo', () => {
+  const host: Nodo = { ...pc1, capas: [1, 2, 3, 4, 5, 6, 7] };
+  const router: Nodo = { ...sw, tipo: 'router', capas: [1, 2, 3] };
+  const conPilas: Topologia = { nodos: [host, router, pc2], enlaces: [e1, e2] };
+
+  const trama: Paquete = {
+    id: 't1',
+    ubicacion: { tipo: 'nodo', nodo: 'sw', capa: 2 },
+    pdu: 'Trama Ethernet',
+    encabezados: [
+      { capa: 2, nombre: 'Ethernet II', campos: [], bytes: 14 },
+      { capa: 2, nombre: 'FCS', campos: [], bytes: 4, parte: 'cola' },
+      { capa: 3, nombre: 'IPv4', campos: [], bytes: 20, parte: 'encabezado' },
+    ],
+    datos: { descripcion: '[Ejemplo] Carga', bytes: 26 },
+  };
+  const conTrama = (paquete: Paquete, topo: Topologia = conPilas): Timeline => ({
+    topologia: topo,
+    pasos: [{ ...paso0, paquetes: [paquete] }],
+  });
+
+  it('acepta pilas, capas en la ubicación, tamaños, colas, PDU y datos', () => {
+    expect(validarTimeline(conTrama(trama))).toEqual([]);
+  });
+
+  it('acepta una capa en la ubicación de un nodo que no declara su pila', () => {
+    const enPc2: Paquete = { ...trama, ubicacion: { tipo: 'nodo', nodo: 'pc2', capa: 7 } };
+    expect(validarTimeline(conTrama(enPc2))).toEqual([]);
+  });
+
+  it('rechaza una capa de la ubicación que no existe', () => {
+    const paquete: Paquete = {
+      ...trama,
+      ubicacion: { tipo: 'nodo', nodo: 'pc2', capa: 0 as never },
+    };
+    expect(validarTimeline(conTrama(paquete))).toEqual([
+      'pasos[0].paquetes[0]: la capa 0 de la ubicación no existe',
+    ]);
+  });
+
+  it('rechaza una capa que no está en la pila del nodo', () => {
+    const paquete: Paquete = { ...trama, ubicacion: { tipo: 'nodo', nodo: 'sw', capa: 4 } };
+    expect(validarTimeline(conTrama(paquete))).toEqual([
+      'pasos[0].paquetes[0]: el nodo «sw» no implementa la capa 4',
+    ]);
+  });
+
+  it('rechaza pilas vacías, con capas inexistentes, repetidas o desordenadas', () => {
+    const topo: Topologia = {
+      nodos: [
+        { ...pc1, capas: [] },
+        { ...sw, capas: [1, 2, 9 as never] },
+        { ...pc2, capas: [1, 2, 2, 3] },
+      ],
+      enlaces: [e1, e2],
+    };
+    const otro: Topologia = {
+      nodos: [{ ...pc1, capas: [1, 3, 2] }, sw, pc2],
+      enlaces: [e1, e2],
+    };
+    expect(validarTimeline({ topologia: topo, pasos: [paso0] })).toEqual([
+      'topologia.nodos[0]: la lista de capas está vacía',
+      'topologia.nodos[1]: la capa 9 no existe',
+      'topologia.nodos[2]: la capa 2 está repetida',
+    ]);
+    expect(validarTimeline({ topologia: otro, pasos: [paso0] })).toEqual([
+      'topologia.nodos[0]: las capas tienen que ir de abajo hacia arriba',
+    ]);
+  });
+
+  it.each([0, -14, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    'rechaza el tamaño %s en encabezados, colas y datos',
+    (bytes) => {
+      const paquete: Paquete = {
+        ...trama,
+        encabezados: trama.encabezados.map((e) => ({ ...e, bytes })),
+        datos: { descripcion: '[Ejemplo] Carga', bytes },
+      };
+      const problema = `el tamaño es ${String(bytes)} y tiene que ser un entero positivo`;
+      expect(validarTimeline(conTrama(paquete))).toEqual([
+        `pasos[0].paquetes[0].encabezados[0]: ${problema}`,
+        `pasos[0].paquetes[0].encabezados[1]: ${problema}`,
+        `pasos[0].paquetes[0].encabezados[2]: ${problema}`,
+        `pasos[0].paquetes[0].datos: ${problema}`,
+      ]);
+    },
+  );
+
+  it('rechaza una cola sin el encabezado de su capa', () => {
+    const paquete: Paquete = {
+      ...trama,
+      encabezados: [
+        { capa: 3, nombre: 'IPv4', campos: [] },
+        { capa: 2, nombre: 'FCS', campos: [], parte: 'cola' },
+      ],
+    };
+    expect(validarTimeline(conTrama(paquete))).toEqual([
+      'pasos[0].paquetes[0].encabezados[1]: es una cola de la capa 2 y el paquete no tiene un encabezado de esa capa',
+    ]);
+  });
+
+  it('rechaza una parte que no existe, una PDU sin nombre y datos sin descripción', () => {
+    const paquete: Paquete = {
+      ...trama,
+      pdu: ' ',
+      encabezados: [{ capa: 2, nombre: 'Ethernet II', campos: [], parte: 'relleno' as never }],
+      datos: { descripcion: '' },
+    };
+    expect(validarTimeline(conTrama(paquete))).toEqual([
+      'pasos[0].paquetes[0].encabezados[0]: la parte «relleno» no existe',
+      'pasos[0].paquetes[0]: el nombre de la PDU está vacío',
+      'pasos[0].paquetes[0].datos: la descripción está vacía',
+    ]);
+  });
+
+  it('los campos nuevos sobreviven la ida y vuelta por JSON', () => {
+    const t = crearTimeline(conPilas, [{ ...paso0, paquetes: [trama] }]);
+    const copia: unknown = JSON.parse(JSON.stringify(t));
+    expect(copia).toStrictEqual(structuredClone(t));
+    expect(validarTimeline(copia as Timeline)).toEqual([]);
+  });
+});
+
 describe('crearTimeline', () => {
   it('devuelve una timeline igual a los datos recibidos', () => {
     expect(crearTimeline(topologia, pasos)).toEqual(valida);

@@ -7,9 +7,12 @@
  * píxel CSS, y por eso los tamaños de texto coinciden con los tokens (lo verifica
  * geometria.test.ts).
  */
-import { NOMBRE_CAPA } from '../../engine/core/capas';
+import { NOMBRE_CAPA, type Capa } from '../../engine/core/capas';
+import { partesEnElCable } from '../../engine/core/pdu';
 import type {
   Encabezado,
+  Paquete,
+  ParteEncabezado,
   Posicion,
   TipoNodo,
   Timeline,
@@ -49,6 +52,10 @@ export const MEDIDAS = Object.freeze({
   /** Líneas base de las dos líneas de un encabezado, desde su borde superior. */
   baseNombre: 15,
   baseCapa: 29,
+  /** Alto de la fila con el nombre de la PDU, arriba de los encabezados (una línea). */
+  altoTitulo: 22,
+  /** Línea base del nombre de la PDU, desde el borde superior de su fila. */
+  baseTitulo: 15,
   /** Ancho de la franja de color a la izquierda de cada encabezado. */
   franja: 4,
   /** Relleno horizontal del texto de un encabezado. */
@@ -74,36 +81,69 @@ export const NOMBRE_TIPO: Readonly<Record<TipoNodo, string>> = Object.freeze({
   ap: 'Punto de acceso',
 });
 
-/** Texto de un encabezado del paquete: su nombre y el de su capa. */
+/**
+ * Texto de un encabezado del paquete: su nombre y el número y nombre de su capa. Una cola
+ * lo dice en texto, para no depender del borde punteado.
+ */
 export function lineasEncabezado(encabezado: Encabezado): readonly [string, string] {
-  return [encabezado.nombre, `Capa ${encabezado.capa} · ${NOMBRE_CAPA[encabezado.capa]}`];
+  const capa = `${encabezado.capa} · ${NOMBRE_CAPA[encabezado.capa]}`;
+  return [encabezado.nombre, encabezado.parte === 'cola' ? `Cola · capa ${capa}` : `Capa ${capa}`];
 }
 
 /** Texto de la fila que se dibuja cuando un paquete no tiene encabezados. */
 export const TEXTO_SIN_ENCABEZADOS = 'Sin encabezados';
 
+/** Una fila del paquete dibujado. La fila de «sin encabezados» no tiene capa ni parte. */
+export interface FilaPaquete {
+  readonly capa?: Capa;
+  readonly parte?: ParteEncabezado;
+  readonly lineas: readonly [string, string];
+}
+
+/** Lo que hace falta de un paquete para dibujarlo. */
+export type PaqueteDibujado = Pick<Paquete, 'encabezados' | 'datos' | 'pdu'>;
+
+/**
+ * Filas del paquete, de arriba hacia abajo: los encabezados con la capa más alta arriba,
+ * como en el modelo OSI, y debajo las colas, en el orden en que salen al cable. El orden en
+ * el cable lo da el motor (`partesEnElCable`); acá solo se apila. Siempre hay al menos una
+ * fila.
+ */
+export function filasPaquete(paquete: PaqueteDibujado): FilaPaquete[] {
+  const partes = partesEnElCable(paquete).flatMap((p) => (p.tipo === 'datos' ? [] : [p]));
+  const filas = [
+    ...partes.filter((p) => p.tipo === 'encabezado').reverse(),
+    ...partes.filter((p) => p.tipo === 'cola'),
+  ].map((p) => ({ capa: p.capa, parte: p.tipo, lineas: lineasEncabezado(p.encabezado) }));
+  return filas.length > 0 ? filas : [{ lineas: [TEXTO_SIN_ENCABEZADOS, ''] }];
+}
+
 const anchoTexto = (texto: string, tamano: number, caracter: number) =>
   texto.length * tamano * caracter;
 
-/** Tamaño de un paquete dibujado como pila de encabezados (siempre al menos una fila). */
-export function tamanoPaquete(encabezados: readonly Encabezado[]): {
+/**
+ * Tamaño de un paquete dibujado: la fila del nombre de la PDU, si lo tiene, y una fila por
+ * encabezado o cola (siempre al menos una).
+ */
+export function tamanoPaquete(paquete: PaqueteDibujado): {
   readonly ancho: number;
   readonly alto: number;
 } {
-  const lineas =
-    encabezados.length > 0 ? encabezados.flatMap(lineasEncabezado) : [TEXTO_SIN_ENCABEZADOS];
+  const filas = filasPaquete(paquete);
+  const lineas = [...filas.flatMap((f) => f.lineas), paquete.pdu ?? ''];
   const texto = Math.max(
     ...lineas.map((l) => anchoTexto(l, MEDIDAS.textoChico, MEDIDAS.caracterMono)),
   );
   return {
     ancho: Math.ceil(MEDIDAS.franja + 2 * MEDIDAS.relleno + texto),
-    alto: Math.max(encabezados.length, 1) * MEDIDAS.altoFila,
+    alto: filas.length * MEDIDAS.altoFila + (paquete.pdu === undefined ? 0 : MEDIDAS.altoTitulo),
   };
 }
 
 /**
  * Punto donde se apoya un paquete: el centro de su borde inferior. Va arriba del nodo, o
- * arriba del punto medio del enlace, para no tapar las formas ni las etiquetas.
+ * arriba del punto medio del enlace, para no tapar las formas ni las etiquetas. La capa de
+ * una ubicación en un nodo no cambia el lugar: la topología no dibuja la pila del nodo.
  */
 export function posicionPaquete(ubicacion: Ubicacion, nodos: ReadonlyMap<string, Posicion>): Punto {
   const posicion = (id: string): Posicion => {
@@ -165,7 +205,7 @@ export function calcularCaja(timeline: Timeline): Caja {
   for (const paso of timeline.pasos) {
     for (const paquete of paso.paquetes) {
       const { x, y } = posicionPaquete(paquete.ubicacion, nodos);
-      const { ancho, alto } = tamanoPaquete(paquete.encabezados);
+      const { ancho, alto } = tamanoPaquete(paquete);
       incluir(x - ancho / 2, y - alto, x + ancho / 2, y);
     }
   }

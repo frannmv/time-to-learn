@@ -30,6 +30,7 @@ const EXPLICACION = {
   1: /El mensaje viaja por el enlace de A hacia B/,
   2: /B recibe el mensaje y anota/,
   4: /C recibe el mensaje/,
+  5: /C lee el mensaje en su capa 7.*Fin del escenario/,
 } as const;
 
 /**
@@ -67,32 +68,32 @@ test.describe('demostración: simulación', () => {
   test('los botones avanzan, retroceden y reinician', async ({ page }) => {
     const s = partes(await abrirSimulacion(page));
 
-    await expect(s.contador).toHaveText('Paso 1 de 5');
+    await expect(s.contador).toHaveText('Paso 1 de 6');
     await expect(s.anterior).toBeDisabled();
     await expect(s.explicacion).toHaveText(EXPLICACION[0]);
 
     await s.siguiente.click();
-    await expect(s.contador).toHaveText('Paso 2 de 5');
+    await expect(s.contador).toHaveText('Paso 2 de 6');
     await expect(s.explicacion).toHaveText(EXPLICACION[1]);
     await expect(s.anterior).toBeEnabled();
 
     await s.anterior.click();
-    await expect(s.contador).toHaveText('Paso 1 de 5');
+    await expect(s.contador).toHaveText('Paso 1 de 6');
 
-    for (let i = 0; i < 4; i++) await s.siguiente.click();
-    await expect(s.contador).toHaveText('Paso 5 de 5');
+    for (let i = 0; i < 5; i++) await s.siguiente.click();
+    await expect(s.contador).toHaveText('Paso 6 de 6');
     await expect(s.siguiente).toBeDisabled();
-    await expect(s.explicacion).toHaveText(EXPLICACION[4]);
+    await expect(s.explicacion).toHaveText(EXPLICACION[5]);
 
     await s.reiniciar.click();
-    await expect(s.contador).toHaveText('Paso 1 de 5');
+    await expect(s.contador).toHaveText('Paso 1 de 6');
   });
 
   test('el botón deshabilitado conserva el foco en el último paso', async ({ page }) => {
     const s = partes(await abrirSimulacion(page));
     await s.siguiente.focus();
-    for (let i = 0; i < 6; i++) await page.keyboard.press('Enter');
-    await expect(s.contador).toHaveText('Paso 5 de 5');
+    for (let i = 0; i < 7; i++) await page.keyboard.press('Enter');
+    await expect(s.contador).toHaveText('Paso 6 de 6');
     await expect(s.siguiente).toBeFocused();
   });
 
@@ -103,16 +104,16 @@ test.describe('demostración: simulación', () => {
     await simulacion.focus();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
-    await expect(s.contador).toHaveText('Paso 3 de 5');
+    await expect(s.contador).toHaveText('Paso 3 de 6');
     await expect(s.explicacion).toHaveText(EXPLICACION[2]);
 
     await page.keyboard.press('ArrowLeft');
-    await expect(s.contador).toHaveText('Paso 2 de 5');
+    await expect(s.contador).toHaveText('Paso 2 de 6');
 
     // También funcionan con el foco en un botón.
     await s.reiniciar.focus();
     await page.keyboard.press('ArrowRight');
-    await expect(s.contador).toHaveText('Paso 3 de 5');
+    await expect(s.contador).toHaveText('Paso 3 de 6');
   });
 
   test('las teclas no actúan con el foco fuera de la simulación', async ({ page }) => {
@@ -120,7 +121,7 @@ test.describe('demostración: simulación', () => {
     await page.getByRole('heading', { name: 'Simulación', exact: true }).click();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press(' ');
-    await expect(s.contador).toHaveText('Paso 1 de 5');
+    await expect(s.contador).toHaveText('Paso 1 de 6');
     await expect(s.reproducir).toHaveText('Reproducir');
   });
 
@@ -135,14 +136,14 @@ test.describe('demostración: simulación', () => {
     await expect(s.reproducir).toHaveText('Pausar');
 
     await page.clock.runFor(INTERVALO_MS);
-    await expect(s.contador).toHaveText('Paso 2 de 5');
+    await expect(s.contador).toHaveText('Paso 2 de 6');
     await page.clock.runFor(INTERVALO_MS);
-    await expect(s.contador).toHaveText('Paso 3 de 5');
+    await expect(s.contador).toHaveText('Paso 3 de 6');
 
     await page.keyboard.press(' ');
     await expect(s.reproducir).toHaveText('Reproducir');
     await page.clock.runFor(INTERVALO_MS * 3);
-    await expect(s.contador).toHaveText('Paso 3 de 5');
+    await expect(s.contador).toHaveText('Paso 3 de 6');
   });
 
   test('la reproducción se detiene sola en el último paso', async ({ page }) => {
@@ -152,17 +153,17 @@ test.describe('demostración: simulación', () => {
 
     await s.reproducir.click();
     // Un intervalo por vez: cada paso programa su temporizador después de dibujarse.
-    for (let paso = 2; paso <= 5; paso++) {
+    for (let paso = 2; paso <= 6; paso++) {
       await page.clock.runFor(INTERVALO_MS);
-      await expect(s.contador).toHaveText(`Paso ${paso} de 5`);
+      await expect(s.contador).toHaveText(`Paso ${paso} de 6`);
     }
     await expect(s.reproducir).toHaveText('Reproducir');
     await page.clock.runFor(INTERVALO_MS * 3);
-    await expect(s.contador).toHaveText('Paso 5 de 5');
+    await expect(s.contador).toHaveText('Paso 6 de 6');
 
     // Reproducir desde el final vuelve a empezar.
     await s.reproducir.click();
-    await expect(s.contador).toHaveText('Paso 1 de 5');
+    await expect(s.contador).toHaveText('Paso 1 de 6');
     await expect(s.reproducir).toHaveText('Pausar');
   });
 
@@ -201,6 +202,38 @@ test.describe('demostración: simulación', () => {
     await expect(encabezado).toContainText('Capa 7 · Aplicación');
   });
 
+  test('en el último paso, la cola y la PDU se leen en texto, no solo por el estilo', async ({
+    page,
+  }) => {
+    const s = partes(await abrirSimulacion(page));
+    const cola = s.paquete.locator('[data-parte="cola"]');
+    await expect(cola).toHaveCount(0);
+
+    for (let i = 0; i < 5; i++) await s.siguiente.click();
+    await expect(s.contador).toHaveText('Paso 6 de 6');
+
+    await expect(cola).toHaveCount(1);
+    await expect(cola).toHaveAttribute('data-capa', '7');
+    await expect(cola).toContainText('Cierre de juguete (ficticio)');
+    await expect(cola).toContainText('Cola · capa 7 · Aplicación');
+    await expect(s.paquete.locator('[data-pdu]')).toHaveText('Mensaje de juguete');
+
+    // La cola va debajo del encabezado de su capa.
+    const encabezado = s.paquete.locator('[data-parte="encabezado"]');
+    const yEncabezado = (await encabezado.boundingBox())?.y ?? Number.NaN;
+    const yCola = (await cola.boundingBox())?.y ?? Number.NaN;
+    expect(yCola).toBeGreaterThan(yEncabezado);
+
+    await expect(s.topologia).toHaveAccessibleDescription(
+      /Mensaje de juguete con .* y Cierre de juguete \(ficticio\) \(cola de la capa 7, Aplicación\): en la capa 7 de C\.$/,
+    );
+    // Una ubicación con capa se sigue dibujando en su nodo.
+    await expect(s.paquete).toHaveAttribute('data-ubicacion', 'nodo:c');
+
+    await revisarAccesibilidad(page, '[aria-labelledby="simulacion"]');
+    await sinScrollHorizontal(page);
+  });
+
   test('lo resaltado del paso se marca en el diagrama', async ({ page }) => {
     const s = partes(await abrirSimulacion(page));
     const nodoA = s.topologia.locator('[data-nodo="a"]');
@@ -229,7 +262,7 @@ test.describe('demostración: simulación', () => {
     const s = partes(await abrirSimulacion(page));
     await s.diagrama.focus();
     await page.keyboard.press('ArrowRight');
-    await expect(s.contador).toHaveText('Paso 1 de 5');
+    await expect(s.contador).toHaveText('Paso 1 de 6');
   });
 
   test('es accesible y no desborda la página', async ({ page }) => {

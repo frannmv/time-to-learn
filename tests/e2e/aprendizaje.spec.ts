@@ -90,7 +90,7 @@ test.describe('demostración: Qué pasa si', () => {
     await simulacion.scrollIntoViewIfNeeded();
     await expect(conSimulacion.locator('astro-island')).not.toHaveAttribute('ssr');
     await simulacion.getByRole('button', { name: 'Siguiente' }).click();
-    await expect(simulacion.getByText(/^Paso \d+ de \d+$/)).toHaveText('Paso 2 de 5');
+    await expect(simulacion.getByText(/^Paso \d+ de \d+$/)).toHaveText('Paso 2 de 6');
   });
 
   test('la sección es accesible y no desborda', async ({ page }) => {
