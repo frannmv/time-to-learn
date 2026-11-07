@@ -1,14 +1,22 @@
 ---
 /**
  * Inicio: índice de los módulos visibles, agrupados por bloque y ordenados por `orden`.
+ *
+ * Versión detallada del indicador TTL (pieza 1.9): arriba del índice, el recorrido con el botón
+ * «Reiniciar progreso»; en cada tarjeta, una marca «Completado» (`MarcaCompletado`). Sin módulos no se dibuja ninguna de las dos cosas ni se carga
+ * JavaScript.
  */
 import SiteLayout from '../layouts/SiteLayout.astro';
 import LayerBadge from '../components/learn/LayerBadge.astro';
+import MarcaCompletado from '../components/learn/MarcaCompletado.astro';
+import TtlProgress from '../components/learn/TtlProgress';
 import { obtenerModulos } from '../lib/modulos';
 import { agruparPorBloque, ruta, rutaModulo } from '../lib/navegacion';
+import { modulosDelRecorrido } from '../lib/recorrido';
 
 const base = import.meta.env.BASE_URL;
-const grupos = agruparPorBloque(await obtenerModulos());
+const modulos = await obtenerModulos();
+const grupos = agruparPorBloque(modulos);
 ---
 
 <SiteLayout menu={false}>
@@ -27,30 +35,37 @@ const grupos = agruparPorBloque(await obtenerModulos());
         Todavía no hay módulos publicados. El primer módulo llega en la Etapa 2.
       </p>
     ) : (
-      grupos.map(({ bloque, modulos }) => {
-        const idBloque = `bloque-${bloque.toLowerCase()}`;
-        return (
-          <section aria-labelledby={idBloque} class="bloque">
-            <h2 id={idBloque}>{bloque}</h2>
-            <ul class="tarjetas">
-              {modulos.map(({ id, data }) => (
-                <li class="tarjeta" data-capa={data.capas[0]}>
-                  <a href={rutaModulo(base, id)} class="titulo">
-                    {data.titulo}
-                  </a>
-                  <p>{data.descripcion}</p>
-                  <p class="datos">
-                    {data.capas.map((capa, i) => (
-                      <LayerBadge capa={capa} principal={data.capas.length > 1 && i === 0} />
-                    ))}
-                    <span class="atenuado">{data.minutos} min</span>
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })
+      <>
+        <section aria-labelledby="tu-recorrido" class="recorrido">
+          <h2 id="tu-recorrido">Tu recorrido</h2>
+          <TtlProgress client:idle modulos={modulosDelRecorrido(modulos)} conReinicio />
+        </section>
+        {grupos.map(({ bloque, modulos }) => {
+          const idBloque = `bloque-${bloque.toLowerCase()}`;
+          return (
+            <section aria-labelledby={idBloque} class="bloque">
+              <h2 id={idBloque}>{bloque}</h2>
+              <ul class="tarjetas">
+                {modulos.map(({ id, data }) => (
+                  <li class="tarjeta" data-capa={data.capas[0]}>
+                    <a href={rutaModulo(base, id)} class="titulo">
+                      {data.titulo}
+                    </a>
+                    <p>{data.descripcion}</p>
+                    <p class="datos">
+                      {data.capas.map((capa, i) => (
+                        <LayerBadge capa={capa} principal={data.capas.length > 1 && i === 0} />
+                      ))}
+                      <span class="atenuado">{data.minutos} min</span>
+                      <MarcaCompletado id={id} />
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </>
     )}
   </div>
 </SiteLayout>
@@ -110,6 +125,11 @@ const grupos = agruparPorBloque(await obtenerModulos());
   .titulo {
     font-size: var(--texto-md);
     font-weight: var(--peso-negrita);
+  }
+
+  .recorrido {
+    display: grid;
+    gap: var(--espacio-2);
   }
 
   .datos {
