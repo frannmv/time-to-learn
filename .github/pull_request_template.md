@@ -2,7 +2,7 @@
 
 <!-- Resumen breve. -->
 
-Cierra #
+Close #
 
 ## Checklist
 

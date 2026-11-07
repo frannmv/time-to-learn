@@ -143,7 +143,7 @@ del otro.
 
 Se copia en cada issue además de la checklist propia de la pieza.
 
-- [ ] Issue en el milestone «Etapa 2», enlazada desde el PR (`Cierra #n`).
+- [ ] Issue en el milestone «Etapa 2», enlazada desde el PR (`Close #n`).
 - [ ] Rama creada desde `main` actualizada, con el nombre de este plan.
 - [ ] Plan breve de la pieza aprobado antes de implementar.
 - [ ] `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build` y `pnpm test:e2e` pasan en local y
