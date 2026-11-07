@@ -51,12 +51,12 @@ Resumen (`Callout`) → Quiz (`Quiz`) → Fuentes (frontmatter).
 
 ## Comandos
 
-| Comando         | Qué hace                              |
-| --------------- | ------------------------------------- |
-| `pnpm dev`      | Servidor de desarrollo                |
-| `pnpm build`    | Build estático en `dist/`             |
-| `pnpm test`     | Tests del motor (Vitest)              |
-| `pnpm test:e2e` | Tests de punta a punta (Playwright)   |
-| `pnpm lint`     | ESLint + Prettier (chequeo)           |
-| `pnpm check`    | Chequeo de tipos (`astro check`)      |
-| `pnpm format`   | Formatea con Prettier                 |
+| Comando         | Qué hace                            |
+| --------------- | ----------------------------------- |
+| `pnpm dev`      | Servidor de desarrollo              |
+| `pnpm build`    | Build estático en `dist/`           |
+| `pnpm test`     | Tests del motor (Vitest)            |
+| `pnpm test:e2e` | Tests de punta a punta (Playwright) |
+| `pnpm lint`     | ESLint + Prettier (chequeo)         |
+| `pnpm check`    | Chequeo de tipos (`astro check`)    |
+| `pnpm format`   | Formatea con Prettier               |
