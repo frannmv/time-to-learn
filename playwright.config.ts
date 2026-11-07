@@ -14,7 +14,28 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}${BASE_PATH}`,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  // Decisión transversal 5 de la Etapa 1: cada test corre en tema claro, tema oscuro y celular.
+  projects: [
+    {
+      name: 'claro',
+      use: { ...devices['Desktop Chrome'], colorScheme: 'light' },
+    },
+    {
+      name: 'oscuro',
+      use: { ...devices['Desktop Chrome'], colorScheme: 'dark' },
+    },
+    {
+      name: 'celular',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 360, height: 800 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        colorScheme: 'light',
+      },
+    },
+  ],
   webServer: {
     command: `pnpm preview --port ${PORT}`,
     port: PORT,

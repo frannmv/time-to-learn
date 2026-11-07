@@ -1,0 +1,39 @@
+---
+/**
+ * Layout base de todas las páginas: documento en español, metadatos, favicon y estilos
+ * globales. No incluye navegación ni encabezado del sitio (eso lo agrega SiteLayout).
+ */
+import '../styles/global.css';
+
+interface Props {
+  /** Título de la página. Si falta, se usa el nombre del sitio. */
+  titulo?: string;
+  /** Descripción para buscadores y vistas previas. */
+  descripcion?: string;
+  /** Pide a los buscadores que no indexen la página (páginas internas). */
+  noindex?: boolean;
+}
+
+const NOMBRE_SITIO = 'TimeToLearn · TTL';
+const DESCRIPCION_SITIO = 'Sitio interactivo para entender cómo funcionan los protocolos de red.';
+
+const { titulo, descripcion = DESCRIPCION_SITIO, noindex = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const tituloCompleto = titulo ? `${titulo} · TimeToLearn` : NOMBRE_SITIO;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content={descripcion} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <title>{tituloCompleto}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

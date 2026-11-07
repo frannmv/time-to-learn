@@ -1,0 +1,204 @@
+/*
+ * Tokens de diseño de TimeToLearn.
+ *
+ * Es el único archivo donde se escriben valores de color, tamaño y espaciado. El resto del
+ * sitio usa estas variables (lo verifica src/styles/valores-sueltos.test.ts).
+ *
+ * Reglas:
+ * - Los colores se escriben en hexadecimal (#rrggbb), para que el test de contraste los lea.
+ * - El tema oscuro solo redefine colores, dentro de @media (prefers-color-scheme: dark).
+ * - Con prefers-reduced-motion: reduce, todas las duraciones valen 0ms.
+ *
+ * Pares de contraste: cada línea «contraste texto: <primer plano> sobre <fondo>» o
+ * «contraste no-texto: <primer plano> sobre <fondo>», con los nombres de las variables,
+ * declara un par que src/styles/tokens.test.ts verifica
+ * en los dos temas: 4,5:1 para texto y 3:1 para elementos no textuales (WCAG 2.2, criterios
+ * 1.4.3 y 1.4.11). En los pares de capas, «N» se reemplaza por cada capa de 1 a 7.
+ *
+ * Los enlaces usan --color-foco como color de texto.
+ *
+ * contraste texto: --color-texto sobre --color-fondo
+ * contraste texto: --color-foco sobre --color-fondo
+ * contraste texto: --color-foco sobre --color-superficie
+ * contraste texto: --color-texto sobre --color-superficie
+ * contraste texto: --color-texto-atenuado sobre --color-fondo
+ * contraste texto: --color-texto-atenuado sobre --color-superficie
+ * contraste texto: --color-correcto sobre --color-fondo
+ * contraste texto: --color-correcto sobre --color-superficie
+ * contraste texto: --color-incorrecto sobre --color-fondo
+ * contraste texto: --color-incorrecto sobre --color-superficie
+ * contraste no-texto: --color-borde sobre --color-fondo
+ * contraste no-texto: --color-borde sobre --color-superficie
+ * contraste no-texto: --color-foco sobre --color-fondo
+ * contraste no-texto: --color-foco sobre --color-superficie
+ * contraste texto: --color-texto sobre --capa-N-fondo
+ * contraste texto: --color-texto-atenuado sobre --capa-N-fondo
+ * contraste texto: --capa-N-borde sobre --capa-N-fondo
+ * contraste texto: --capa-N-borde sobre --color-fondo
+ * contraste texto: --capa-N-borde sobre --color-superficie
+ * contraste no-texto: --color-foco sobre --capa-N-fondo
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ── Colores semánticos (tema claro) ── */
+  --color-fondo: #ffffff;
+  --color-superficie: #f3f4f6;
+  --color-texto: #1a1d23;
+  --color-texto-atenuado: #555b66;
+  --color-borde: #858b96;
+  --color-foco: #1d4ed8;
+  --color-correcto: #17743a;
+  --color-incorrecto: #c0262d;
+
+  /*
+   * ── Colores por capa OSI (tema claro) ──
+   * -fondo: relleno claro detrás de texto. -borde: texto, bordes y trazos de la capa.
+   */
+  --capa-1-fondo: #fde7e7; /* Física: rojo */
+  --capa-1-borde: #b3261e;
+  --capa-2-fondo: #feecdc; /* Enlace de datos: naranja */
+  --capa-2-borde: #a8470a;
+  --capa-3-fondo: #fbf1c7; /* Red: ámbar */
+  --capa-3-borde: #7a5c00;
+  --capa-4-fondo: #e2f4e0; /* Transporte: verde */
+  --capa-4-borde: #2a7230;
+  --capa-5-fondo: #d8f2ef; /* Sesión: turquesa */
+  --capa-5-borde: #0b6e69;
+  --capa-6-fondo: #e1ebfd; /* Presentación: azul */
+  --capa-6-borde: #1d4fc4;
+  --capa-7-fondo: #efe6fb; /* Aplicación: violeta */
+  --capa-7-borde: #6d32c9;
+
+  /* ── Tipografía ── */
+  --fuente-texto:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --fuente-mono:
+    ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --texto-xs: 0.75rem;
+  --texto-sm: 0.875rem;
+  --texto-base: 1rem;
+  --texto-md: 1.125rem;
+  --texto-lg: 1.25rem;
+  --texto-xl: 1.5rem;
+  --texto-2xl: 2rem;
+
+  --altura-linea-compacta: 1.2;
+  --altura-linea-base: 1.6;
+  --altura-linea-mono: 1.4;
+
+  --peso-normal: 400;
+  --peso-semi: 600;
+  --peso-negrita: 700;
+
+  --subrayado-separacion: 0.15em;
+
+  /* ── Espaciado ── */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+  --espacio-8: 4rem;
+
+  /* ── Bordes y radios ── */
+  --borde-fino: 1px;
+  --borde-grueso: 2px;
+  --borde-capa: 4px;
+
+  --radio-chico: 0.25rem;
+  --radio-medio: 0.5rem;
+  --radio-grande: 1rem;
+  --radio-pildora: 999px;
+
+  /* ── Foco ── */
+  --foco-grosor: 3px;
+  --foco-separacion: 2px;
+
+  /* ── Anchos de contenido ── */
+  --ancho-lectura: 42rem;
+  --ancho-amplio: 64rem;
+  --ancho-columna-min: 14rem; /* ancho mínimo de una columna en rejillas de tarjetas */
+  --margen-pagina: var(--espacio-4);
+
+  /* ── Animación ── */
+  --duracion-rapida: 150ms;
+  --duracion-media: 300ms;
+  --duracion-lenta: 600ms;
+  --curva-estandar: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ── Colores semánticos (tema oscuro) ── */
+    --color-fondo: #121418;
+    --color-superficie: #1c1f26;
+    --color-texto: #e8eaed;
+    --color-texto-atenuado: #a4aab4;
+    --color-borde: #6e7581;
+    --color-foco: #7eaaff;
+    --color-correcto: #5fcf80;
+    --color-incorrecto: #ff7b72;
+
+    /* ── Colores por capa OSI (tema oscuro) ── */
+    --capa-1-fondo: #3b1716;
+    --capa-1-borde: #ff8f87;
+    --capa-2-fondo: #3a2412;
+    --capa-2-borde: #ffad66;
+    --capa-3-fondo: #33290b;
+    --capa-3-borde: #efc94c;
+    --capa-4-fondo: #16301a;
+    --capa-4-borde: #7fd68c;
+    --capa-5-fondo: #0e302d;
+    --capa-5-borde: #5dd3c6;
+    --capa-6-fondo: #17264a;
+    --capa-6-borde: #8db5ff;
+    --capa-7-fondo: #2a1b46;
+    --capa-7-borde: #c6a6ff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duracion-rapida: 0ms;
+    --duracion-media: 0ms;
+    --duracion-lenta: 0ms;
+  }
+}
+
+/*
+ * Color de capa por atributo: un elemento con data-capa="N" expone --capa-fondo y
+ * --capa-borde con los colores de esa capa, en el tema que corresponda.
+ */
+[data-capa='1'] {
+  --capa-fondo: var(--capa-1-fondo);
+  --capa-borde: var(--capa-1-borde);
+}
+[data-capa='2'] {
+  --capa-fondo: var(--capa-2-fondo);
+  --capa-borde: var(--capa-2-borde);
+}
+[data-capa='3'] {
+  --capa-fondo: var(--capa-3-fondo);
+  --capa-borde: var(--capa-3-borde);
+}
+[data-capa='4'] {
+  --capa-fondo: var(--capa-4-fondo);
+  --capa-borde: var(--capa-4-borde);
+}
+[data-capa='5'] {
+  --capa-fondo: var(--capa-5-fondo);
+  --capa-borde: var(--capa-5-borde);
+}
+[data-capa='6'] {
+  --capa-fondo: var(--capa-6-fondo);
+  --capa-borde: var(--capa-6-borde);
+}
+[data-capa='7'] {
+  --capa-fondo: var(--capa-7-fondo);
+  --capa-borde: var(--capa-7-borde);
+}

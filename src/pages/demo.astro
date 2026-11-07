@@ -1,0 +1,234 @@
+---
+/**
+ * Página de demostración interna (decisión transversal 4 del plan de la Etapa 1).
+ * No se enlaza desde ningún lado y pide no ser indexada. Cada pieza de la etapa le agrega
+ * su sección.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Nombres de las capas del modelo OSI (ISO/IEC 7498-1). Cuando exista el catálogo del motor
+// (src/engine/core/capas.ts, pieza 1.2), esta lista se toma de ahí.
+const capas = [
+  { numero: 1, nombre: 'Física' },
+  { numero: 2, nombre: 'Enlace de datos' },
+  { numero: 3, nombre: 'Red' },
+  { numero: 4, nombre: 'Transporte' },
+  { numero: 5, nombre: 'Sesión' },
+  { numero: 6, nombre: 'Presentación' },
+  { numero: 7, nombre: 'Aplicación' },
+];
+
+const semanticos = [
+  { token: '--color-fondo', uso: 'Fondo de la página' },
+  { token: '--color-superficie', uso: 'Tarjetas, paneles y bloques' },
+  { token: '--color-texto', uso: 'Texto principal' },
+  { token: '--color-texto-atenuado', uso: 'Texto secundario' },
+  { token: '--color-borde', uso: 'Bordes de controles y separadores' },
+  { token: '--color-foco', uso: 'Indicador de foco y enlaces' },
+  { token: '--color-correcto', uso: 'Respuesta correcta' },
+  { token: '--color-incorrecto', uso: 'Respuesta incorrecta' },
+];
+
+const tamanos = ['xs', 'sm', 'base', 'md', 'lg', 'xl', '2xl'];
+const espacios = [1, 2, 3, 4, 5, 6, 7, 8];
+const radios = ['chico', 'medio', 'grande', 'pildora'];
+const duraciones = ['rapida', 'media', 'lenta'];
+---
+
+<BaseLayout titulo="Demostración" descripcion="Página interna de desarrollo." noindex>
+  <main>
+    <header>
+      <h1>Demostración de componentes</h1>
+      <p class="atenuado">
+        Página interna de desarrollo: muestra los tokens y los componentes compartidos con datos de
+        ejemplo. No está enlazada desde el sitio.
+      </p>
+    </header>
+
+    <section aria-labelledby="tokens">
+      <h2 id="tokens">Tokens</h2>
+
+      <h3>Colores por capa OSI</h3>
+      <p class="atenuado">
+        Cada capa tiene un color de fondo y uno de texto y borde, en tema claro y oscuro. El color
+        siempre va acompañado del número y el nombre de la capa.
+      </p>
+      <ul class="rejilla capas" aria-label="Colores de las capas OSI">
+        {capas.map(({ numero, nombre }) => (
+          <li class="capa" data-capa={numero}>
+            <span class="capa-numero">Capa {numero}</span>
+            <strong class="capa-nombre">{nombre}</strong>
+            <code class="capa-tokens">
+              --capa-{numero}-fondo
+              <br />
+              --capa-{numero}-borde
+            </code>
+          </li>
+        ))}
+      </ul>
+
+      <h3>Colores semánticos</h3>
+      <ul class="rejilla" aria-label="Colores semánticos">
+        {semanticos.map(({ token, uso }) => (
+          <li class="semantico">
+            <span class="muestra" style={`background-color: var(${token})`} />
+            <span>
+              <code>{token}</code>
+              <br />
+              <span class="atenuado">{uso}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <h3>Tipografía</h3>
+      <ul class="lista" aria-label="Escala de tamaños de texto">
+        {tamanos.map((t) => (
+          <li style={`font-size: var(--texto-${t})`}>
+            <code>--texto-{t}</code> Capa por capa
+          </li>
+        ))}
+      </ul>
+      <p class="mono">Monoespaciada para bytes: 01 23 45 67 89 ab cd ef</p>
+
+      <h3>Espaciado</h3>
+      <ul class="lista" aria-label="Escala de espaciado">
+        {espacios.map((n) => (
+          <li class="espacio">
+            <code>--espacio-{n}</code>
+            <span class="barra" style={`inline-size: var(--espacio-${n})`} />
+          </li>
+        ))}
+      </ul>
+
+      <h3>Radios</h3>
+      <ul class="rejilla" aria-label="Radios de borde">
+        {radios.map((r) => (
+          <li class="radio" style={`border-radius: var(--radio-${r})`}>
+            <code>--radio-{r}</code>
+          </li>
+        ))}
+      </ul>
+
+      <h3>Duraciones de animación</h3>
+      <p class="atenuado">
+        Con movimiento reducido (<code>prefers-reduced-motion: reduce</code>) todas valen 0.
+      </p>
+      <ul class="lista" aria-label="Duraciones de animación">
+        {duraciones.map((d) => (
+          <li>
+            <code>--duracion-{d}</code>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    max-inline-size: var(--ancho-amplio);
+    margin-inline: auto;
+    padding: var(--margen-pagina);
+    display: grid;
+    gap: var(--espacio-6);
+  }
+
+  header,
+  section {
+    display: grid;
+    gap: var(--espacio-4);
+  }
+
+  h3 {
+    margin-block-start: var(--espacio-4);
+  }
+
+  .atenuado {
+    color: var(--color-texto-atenuado);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--ancho-columna-min)), 1fr));
+    gap: var(--espacio-3);
+  }
+
+  .lista {
+    display: grid;
+    gap: var(--espacio-2);
+  }
+
+  .capa {
+    display: grid;
+    gap: var(--espacio-1);
+    padding: var(--espacio-3) var(--espacio-4);
+    background-color: var(--capa-fondo);
+    border: var(--borde-fino) solid var(--capa-borde);
+    border-inline-start-width: var(--borde-capa);
+    border-radius: var(--radio-medio);
+  }
+
+  .capa-numero {
+    color: var(--capa-borde);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-negrita);
+  }
+
+  .capa-nombre {
+    font-size: var(--texto-md);
+  }
+
+  .capa-tokens {
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-xs);
+  }
+
+  .semantico {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-3);
+    padding: var(--espacio-3);
+    background-color: var(--color-superficie);
+    border-radius: var(--radio-medio);
+  }
+
+  .muestra {
+    flex: none;
+    inline-size: var(--espacio-7);
+    block-size: var(--espacio-7);
+    border: var(--borde-fino) solid var(--color-borde);
+    border-radius: var(--radio-chico);
+  }
+
+  .mono {
+    font-family: var(--fuente-mono);
+    line-height: var(--altura-linea-mono);
+  }
+
+  .espacio {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-3);
+  }
+
+  .espacio code {
+    min-inline-size: var(--espacio-8);
+  }
+
+  .barra {
+    block-size: var(--espacio-3);
+    background-color: var(--color-foco);
+  }
+
+  .radio {
+    padding: var(--espacio-4);
+    background-color: var(--color-superficie);
+    border: var(--borde-fino) solid var(--color-borde);
+  }
+</style>
