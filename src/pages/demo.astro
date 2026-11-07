@@ -11,6 +11,9 @@ import SourceList from '../components/learn/SourceList.astro';
 import Callout from '../components/learn/Callout.astro';
 import WhatIf from '../components/learn/WhatIf.astro';
 import Quiz, { type PreguntaQuiz } from '../components/learn/Quiz';
+import TtlProgress from '../components/learn/TtlProgress';
+import MarcaCompletado from '../components/learn/MarcaCompletado.astro';
+import type { ModuloRecorrido } from '../lib/recorrido';
 import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 import Simulation from '../components/sim/Simulation';
@@ -80,6 +83,16 @@ const preguntasDemo: PreguntaQuiz[] = [
     explicacion:
       'El escenario se inventó para probar los componentes: no representa ningún protocolo.',
   },
+];
+
+// Pieza 1.9: módulos de ejemplo para el indicador TTL (en la Etapa 1 no hay módulos visibles).
+// «demo» es el del quiz de arriba: terminarlo suma un salto. Los demás no existen.
+const recorridoDemo: ModuloRecorrido[] = [
+  { id: 'demo-fisica', titulo: '[Ejemplo] Medios físicos', capa: 1 },
+  { id: 'demo-enlace', titulo: '[Ejemplo] Tramas', capa: 2 },
+  { id: 'demo', titulo: '[Ejemplo] Quiz de /demo/', capa: 3 },
+  { id: 'demo-transporte', titulo: '[Ejemplo] Segmentos', capa: 4 },
+  { id: 'demo-aplicacion', titulo: '[Ejemplo] Mensajes', capa: 7 },
 ];
 ---
 
@@ -292,6 +305,35 @@ const preguntasDemo: PreguntaQuiz[] = [
         «demo» en este navegador.
       </p>
       <Quiz client:visible moduloId="demo" preguntas={preguntasDemo} />
+    </section>
+
+    <section aria-labelledby="indicador-ttl">
+      <h2 id="indicador-ttl">Indicador TTL</h2>
+      <p class="atenuado">
+        Recorrido con cinco módulos de ejemplo. Solo «[Ejemplo] Quiz de /demo/» existe: terminar el
+        quiz de arriba suma un salto, sin recargar. El encabezado de esta página cuenta los módulos
+        visibles reales, que en la Etapa 1 son ninguno.
+      </p>
+      <div class="muestra-componente" data-testid="demo-ttl">
+        <TtlProgress client:visible modulos={recorridoDemo} conReinicio />
+      </div>
+
+      <h3>Índice de ejemplo</h3>
+      <p class="atenuado">Como en el inicio, cada módulo completado lleva su marca.</p>
+      <ul class="lista" data-testid="demo-ttl-indice">
+        {recorridoDemo.map(({ id, titulo, capa }) => (
+          <li class="fila">
+            <LayerBadge capa={capa} compacta />
+            <span>{titulo}</span>
+            <MarcaCompletado id={id} />
+          </li>
+        ))}
+      </ul>
+
+      <h3>Sin módulos</h3>
+      <div class="muestra-componente" data-testid="demo-ttl-vacio">
+        <TtlProgress modulos={[]} />
+      </div>
     </section>
 
     <section aria-labelledby="layout">
