@@ -35,6 +35,12 @@ export interface Nodo {
   readonly tipo: TipoNodo;
   readonly etiqueta: string;
   readonly posicion: Posicion;
+  /**
+   * Capas que implementa el equipo, de abajo hacia arriba y sin repetir (un host, de la 1
+   * a la 7; un router, de la 1 a la 3). Es lo que dibuja la vista de pila. Sin este campo,
+   * el escenario no dice nada sobre la pila del equipo.
+   */
+  readonly capas?: readonly Capa[];
 }
 
 /** Enlace entre dos nodos. El orden de los extremos no importa. */
@@ -58,16 +64,41 @@ export interface Campo {
   readonly valor: string;
 }
 
-/** Encabezado de una capa dentro de un paquete. */
+/**
+ * Dónde va lo que una capa agrega: antes de los datos (`'encabezado'`) o después
+ * (`'cola'`), como el FCS de Ethernet.
+ */
+export type ParteEncabezado = 'encabezado' | 'cola';
+
+export const PARTES_ENCABEZADO: readonly ParteEncabezado[] = Object.freeze(['encabezado', 'cola']);
+
+/** Lo que una capa le agrega a un paquete: un encabezado o una cola. */
 export interface Encabezado {
   readonly capa: Capa;
   readonly nombre: string;
   readonly campos: readonly Campo[];
+  /** Tamaño en bytes, entero positivo. Sin este campo, el tamaño no se conoce. */
+  readonly bytes?: number;
+  /** `'encabezado'` si no se indica. */
+  readonly parte?: ParteEncabezado;
+}
+
+/** Carga de la capa más alta del paquete. */
+export interface Datos {
+  /** Qué son los datos, en texto (por ejemplo, el mensaje de la aplicación). */
+  readonly descripcion: string;
+  /** Tamaño en bytes, entero positivo. Sin este campo, el tamaño no se conoce. */
+  readonly bytes?: number;
 }
 
 /** Dónde está un paquete: en un nodo, o sobre un enlace yendo de un extremo al otro. */
 export type Ubicacion =
-  | { readonly tipo: 'nodo'; readonly nodo: string }
+  | {
+      readonly tipo: 'nodo';
+      readonly nodo: string;
+      /** En qué capa de la pila del nodo está la PDU, si el paso lo dice. */
+      readonly capa?: Capa;
+    }
   | {
       readonly tipo: 'enlace';
       readonly enlace: string;
@@ -76,13 +107,20 @@ export type Ubicacion =
     };
 
 /**
- * Un paquete en un paso. Los encabezados van de afuera hacia adentro, en el orden en que
- * viajan por el cable: primero el de la capa más baja.
+ * Un paquete en un paso.
+ *
+ * Los encabezados van de afuera hacia adentro: primero el de la capa más baja. Una cola
+ * se anota al lado del encabezado de su capa, por ejemplo `[Ethernet, FCS, IPv4, TCP]`.
+ * En qué orden viaja cada parte por el cable lo calcula `partesEnElCable` (pdu.ts).
  */
 export interface Paquete {
   readonly id: string;
   readonly ubicacion: Ubicacion;
   readonly encabezados: readonly Encabezado[];
+  /** Nombre de la PDU en este punto («Segmento TCP», «Trama Ethernet», «T-PDU»). */
+  readonly pdu?: string;
+  /** Carga de la capa más alta. */
+  readonly datos?: Datos;
 }
 
 /** Marca de una fila respecto del paso anterior. Sin marca, la fila no cambió. */
@@ -153,6 +191,25 @@ function duplicados(ids: readonly string[]): string[] {
   return [...repetidos];
 }
 
+/** Un tamaño en bytes válido: un entero positivo. */
+function esTamano(valor: unknown): boolean {
+  return typeof valor === 'number' && Number.isSafeInteger(valor) && valor > 0;
+}
+
+function validarCapasNodo(capas: readonly Capa[], ruta: string, errores: string[]): void {
+  if (capas.length === 0) errores.push(`${ruta}: la lista de capas está vacía`);
+  for (const capa of capas) {
+    if (!esCapa(capa)) errores.push(`${ruta}: la capa ${String(capa)} no existe`);
+  }
+  for (const capa of duplicados(capas.map(String))) {
+    errores.push(`${ruta}: la capa ${capa} está repetida`);
+  }
+  const validas = capas.filter(esCapa);
+  if (validas.some((capa, i) => i > 0 && capa < (validas[i - 1] ?? capa))) {
+    errores.push(`${ruta}: las capas tienen que ir de abajo hacia arriba`);
+  }
+}
+
 function validarTopologia(topologia: Topologia, errores: string[]): void {
   for (const id of duplicados(topologia.nodos.map((n) => n.id))) {
     errores.push(`topologia.nodos: el id «${id}» está repetido`);
@@ -170,6 +227,7 @@ function validarTopologia(topologia: Topologia, errores: string[]): void {
     if (!Number.isFinite(nodo.posicion.x) || !Number.isFinite(nodo.posicion.y)) {
       errores.push(`${ruta}: la posición tiene que ser un par de números finitos`);
     }
+    if (nodo.capas !== undefined) validarCapasNodo(nodo.capas, ruta, errores);
   });
 
   const nodos = new Set(topologia.nodos.map((n) => n.id));
@@ -185,10 +243,56 @@ function validarTopologia(topologia: Topologia, errores: string[]): void {
   });
 }
 
+function validarPartes(paquete: Paquete, rutaPaquete: string, errores: string[]): void {
+  const capasConEncabezado = new Set(
+    paquete.encabezados
+      .filter((e) => (e.parte ?? 'encabezado') === 'encabezado')
+      .map((e) => e.capa),
+  );
+  paquete.encabezados.forEach((encabezado, k) => {
+    const ruta = `${rutaPaquete}.encabezados[${k}]`;
+    if (!esCapa(encabezado.capa)) {
+      errores.push(`${ruta}: la capa ${String(encabezado.capa)} no existe`);
+    }
+    if (encabezado.bytes !== undefined && !esTamano(encabezado.bytes)) {
+      errores.push(
+        `${ruta}: el tamaño es ${String(encabezado.bytes)} y tiene que ser un entero positivo`,
+      );
+    }
+    if (encabezado.parte !== undefined && !PARTES_ENCABEZADO.includes(encabezado.parte)) {
+      errores.push(`${ruta}: la parte «${String(encabezado.parte)}» no existe`);
+    }
+    if (
+      encabezado.parte === 'cola' &&
+      esCapa(encabezado.capa) &&
+      !capasConEncabezado.has(encabezado.capa)
+    ) {
+      errores.push(
+        `${ruta}: es una cola de la capa ${encabezado.capa} y el paquete no tiene un encabezado de esa capa`,
+      );
+    }
+  });
+
+  if (paquete.pdu?.trim() === '') {
+    errores.push(`${rutaPaquete}: el nombre de la PDU está vacío`);
+  }
+  const { datos } = paquete;
+  if (datos !== undefined) {
+    if (datos.descripcion.trim() === '') {
+      errores.push(`${rutaPaquete}.datos: la descripción está vacía`);
+    }
+    if (datos.bytes !== undefined && !esTamano(datos.bytes)) {
+      errores.push(
+        `${rutaPaquete}.datos: el tamaño es ${String(datos.bytes)} y tiene que ser un entero positivo`,
+      );
+    }
+  }
+}
+
 function validarPaso(
   paso: Step,
   i: number,
-  nodos: ReadonlySet<string>,
+  nodos: ReadonlyMap<string, Nodo>,
   enlaces: ReadonlyMap<string, Enlace>,
   errores: string[],
 ): void {
@@ -208,8 +312,17 @@ function validarPaso(
     const rutaPaquete = `${ruta}.paquetes[${j}]`;
     const ubicacion = paquete.ubicacion;
     if (ubicacion.tipo === 'nodo') {
-      if (!nodos.has(ubicacion.nodo)) {
+      const nodo = nodos.get(ubicacion.nodo);
+      if (nodo === undefined) {
         errores.push(`${rutaPaquete}: el nodo «${ubicacion.nodo}» no existe`);
+      }
+      const { capa } = ubicacion;
+      if (capa !== undefined) {
+        if (!esCapa(capa)) {
+          errores.push(`${rutaPaquete}: la capa ${String(capa)} de la ubicación no existe`);
+        } else if (nodo?.capas !== undefined && !nodo.capas.includes(capa)) {
+          errores.push(`${rutaPaquete}: el nodo «${nodo.id}» no implementa la capa ${capa}`);
+        }
       }
     } else {
       const enlace = enlaces.get(ubicacion.enlace);
@@ -227,13 +340,7 @@ function validarPaso(
         }
       }
     }
-    paquete.encabezados.forEach((encabezado, k) => {
-      if (!esCapa(encabezado.capa)) {
-        errores.push(
-          `${rutaPaquete}.encabezados[${k}]: la capa ${String(encabezado.capa)} no existe`,
-        );
-      }
-    });
+    validarPartes(paquete, rutaPaquete, errores);
   });
 
   for (const id of duplicados(paso.tablas.map((t) => t.id))) {
@@ -268,6 +375,9 @@ function validarPaso(
  *
  * Comprueba que haya al menos un paso, que los índices sean consecutivos desde 0, que los
  * ids no se repitan y que toda referencia a un nodo o enlace exista en la topología.
+ * También revisa las PDU: que la capa de una ubicación exista y esté en la pila del nodo
+ * (si el nodo la declara), que los tamaños sean enteros positivos y que toda cola tenga en
+ * el mismo paquete un encabezado de su capa.
  */
 export function validarTimeline(timeline: Timeline): string[] {
   const errores: string[] = [];
@@ -277,7 +387,7 @@ export function validarTimeline(timeline: Timeline): string[] {
     errores.push('pasos: la línea de tiempo necesita al menos un paso');
   }
 
-  const nodos = new Set(timeline.topologia.nodos.map((n) => n.id));
+  const nodos = new Map(timeline.topologia.nodos.map((n) => [n.id, n]));
   const enlaces = new Map(timeline.topologia.enlaces.map((e) => [e.id, e]));
   timeline.pasos.forEach((paso, i) => validarPaso(paso, i, nodos, enlaces, errores));
 
