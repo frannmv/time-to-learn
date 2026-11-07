@@ -1,0 +1,61 @@
+---
+/**
+ * Marca de una capa OSI: el color de la capa siempre acompañado de su número y su nombre, para
+ * que la capa nunca se comunique solo con color (WCAG 2.2, criterio 1.4.1).
+ *
+ * La versión compacta muestra solo el número y deja el nombre completo para los lectores de
+ * pantalla; se usa en listas densas como la navegación.
+ */
+import { NOMBRE_CAPA, type Capa } from '../../engine/core/capas';
+
+interface Props {
+  capa: Capa;
+  /** Muestra solo el número (el nombre queda para lectores de pantalla). */
+  compacta?: boolean;
+  /** Agrega «(principal)» al texto, para la capa principal de un módulo. */
+  principal?: boolean;
+}
+
+const { capa, compacta = false, principal = false } = Astro.props;
+const nombre = NOMBRE_CAPA[capa];
+---
+
+<span class:list={['marca-capa', { compacta }]} data-capa={capa}>
+  {compacta ? (
+    <>
+      <span aria-hidden="true">{capa}</span>
+      <span class="solo-lector">
+        Capa {capa}: {nombre}
+        {principal && ' (principal)'}
+      </span>
+    </>
+  ) : (
+    <>
+      {capa} · {nombre}
+      {principal && <span class="solo-lector"> (capa principal)</span>}
+    </>
+  )}
+</span>
+
+<style>
+  .marca-capa {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--espacio-2);
+    color: var(--capa-borde);
+    background-color: var(--capa-fondo);
+    border: var(--borde-fino) solid var(--capa-borde);
+    border-inline-start-width: var(--borde-capa);
+    border-radius: var(--radio-chico);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-negrita);
+    line-height: var(--altura-linea-base);
+    white-space: nowrap;
+  }
+
+  .compacta {
+    justify-content: center;
+    min-inline-size: var(--espacio-6);
+    padding-inline: var(--espacio-1);
+  }
+</style>

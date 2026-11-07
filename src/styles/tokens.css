@@ -119,11 +119,16 @@
   --foco-grosor: 3px;
   --foco-separacion: 2px;
 
+  /* ── Texto solo para lectores de pantalla (clase .solo-lector) ── */
+  --solo-lector-tamano: 1px;
+
   /* ── Anchos de contenido ── */
   --ancho-lectura: 42rem;
   --ancho-amplio: 64rem;
   --ancho-columna-min: 14rem; /* ancho mínimo de una columna en rejillas de tarjetas */
   --margen-pagina: var(--espacio-4);
+  --ancho-menu: 16rem; /* columna de navegación por bloque en escritorio */
+  --ancho-sitio: 80rem; /* ancho máximo de encabezado, menú y contenido juntos */
 
   /* ── Animación ── */
   --duracion-rapida: 150ms;

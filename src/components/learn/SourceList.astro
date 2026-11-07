@@ -1,0 +1,82 @@
+---
+/**
+ * Sección Fuentes de un módulo, generada desde el frontmatter (`fuentes`). Va al final de la
+ * plantilla de módulo (LINEAMIENTOS §6).
+ */
+import type { TipoFuente } from '../../content/schema';
+
+interface Props {
+  fuentes: readonly {
+    tipo: TipoFuente;
+    id: string;
+    titulo: string;
+    seccion?: string | undefined;
+    url?: string | undefined;
+  }[];
+}
+
+const TIPO: Record<TipoFuente, string> = {
+  rfc: 'RFC',
+  estandar: 'Estándar',
+  libro: 'Libro',
+  apunte: 'Apunte',
+};
+
+const { fuentes } = Astro.props;
+---
+
+<section aria-labelledby="fuentes" class="fuentes">
+  <h2 id="fuentes">Fuentes</h2>
+  <ul>
+    {fuentes.map(({ tipo, id, titulo, seccion, url }) => (
+      <li>
+        <span class="tipo">{TIPO[tipo]}</span>
+        <span>
+          <strong>{id}</strong>
+          {' · '}
+          {url ? (
+            <a href={url} rel="external">
+              {titulo}
+            </a>
+          ) : (
+            <cite>{titulo}</cite>
+          )}
+          {seccion && <span class="seccion"> · {seccion}</span>}
+        </span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .fuentes {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--espacio-2);
+  }
+
+  .tipo {
+    margin-inline-end: var(--espacio-2);
+    padding-inline: var(--espacio-2);
+    border: var(--borde-fino) solid var(--color-borde);
+    border-radius: var(--radio-chico);
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-negrita);
+    text-transform: uppercase;
+  }
+
+  cite {
+    font-style: italic;
+  }
+
+  .seccion {
+    color: var(--color-texto-atenuado);
+  }
+</style>
