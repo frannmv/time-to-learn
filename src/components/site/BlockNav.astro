@@ -1,0 +1,95 @@
+---
+/**
+ * Navegación por bloque: los módulos visibles agrupados por bloque y ordenados por `orden`.
+ * Cada módulo lleva la marca de su capa principal (número y nombre, no solo color).
+ */
+import LayerBadge from '../learn/LayerBadge.astro';
+import { agruparPorBloque, rutaModulo, type ModuloNavegable } from '../../lib/navegacion';
+
+interface Props {
+  modulos: readonly ModuloNavegable[];
+  /** Ruta de la página actual, para marcar el módulo abierto. */
+  actual: string;
+}
+
+const { modulos, actual } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const grupos = agruparPorBloque(modulos);
+---
+
+<nav aria-label="Módulos por bloque" class="nav-bloques">
+  {grupos.length === 0 ? (
+    <p class="vacio">Todavía no hay módulos.</p>
+  ) : (
+    <ul class="bloques">
+      {grupos.map(({ bloque, modulos }) => (
+        <li>
+          <span class="bloque">{bloque}</span>
+          <ul class="modulos">
+            {modulos.map(({ id, data }) => {
+              const href = rutaModulo(base, id);
+              const capa = data.capas[0];
+              return (
+                <li>
+                  <a href={href} aria-current={href === actual ? 'page' : undefined}>
+                    {capa !== undefined && <LayerBadge capa={capa} compacta />}
+                    <span>{data.titulo}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  )}
+</nav>
+
+<style>
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .bloques {
+    display: grid;
+    gap: var(--espacio-4);
+  }
+
+  .bloque {
+    display: block;
+    margin-block-end: var(--espacio-1);
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-negrita);
+  }
+
+  .modulos {
+    display: grid;
+    gap: var(--espacio-1);
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-2);
+    padding: var(--espacio-1) var(--espacio-2);
+    border-radius: var(--radio-chico);
+    color: var(--color-texto);
+    text-decoration: none;
+  }
+
+  a:hover span:last-child {
+    text-decoration: underline;
+  }
+
+  a[aria-current='page'] {
+    background-color: var(--color-superficie);
+    font-weight: var(--peso-negrita);
+  }
+
+  .vacio {
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-sm);
+  }
+</style>

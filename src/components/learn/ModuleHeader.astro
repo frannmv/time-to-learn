@@ -1,0 +1,113 @@
+---
+/**
+ * Encabezado de un módulo (plantilla de módulo, LINEAMIENTOS §6): título, capas, tiempo de
+ * lectura y prerrequisitos enlazados. Recibe datos ya resueltos; no consulta la colección, así
+ * se puede mostrar en /demo/ con datos de ejemplo.
+ */
+import type { Capa } from '../../engine/core/capas';
+import LayerBadge from './LayerBadge.astro';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  /** Capas del módulo; la primera es la principal. */
+  capas: readonly Capa[];
+  minutos: number;
+  prerrequisitos: readonly { titulo: string; href: string }[];
+  /** Nivel del título. Es 1 en la página de módulo; /demo/ usa otro para no repetir el h1. */
+  nivel?: 1 | 2 | 3 | 4;
+}
+
+const { titulo, descripcion, capas, minutos, prerrequisitos, nivel = 1 } = Astro.props;
+const Titulo = `h${nivel}` as const;
+---
+
+<header class="encabezado-modulo" data-capa={capas[0]}>
+  <Titulo class="titulo">{titulo}</Titulo>
+  <p class="descripcion">{descripcion}</p>
+  <dl class="datos">
+    <div>
+      <dt>{capas.length === 1 ? 'Capa' : 'Capas'}</dt>
+      <dd>
+        <ul class="capas">
+          {capas.map((capa, i) => (
+            <li>
+              <LayerBadge capa={capa} principal={capas.length > 1 && i === 0} />
+            </li>
+          ))}
+        </ul>
+      </dd>
+    </div>
+    <div>
+      <dt>Lectura</dt>
+      <dd>{minutos} min</dd>
+    </div>
+    <div>
+      <dt>Prerrequisitos</dt>
+      <dd>
+        {prerrequisitos.length > 0 ? (
+          <ul class="prerrequisitos">
+            {prerrequisitos.map(({ titulo, href }) => (
+              <li>
+                <a href={href}>{titulo}</a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          'Ninguno'
+        )}
+      </dd>
+    </div>
+  </dl>
+</header>
+
+<style>
+  .encabezado-modulo {
+    display: grid;
+    gap: var(--espacio-3);
+    padding-block-end: var(--espacio-4);
+    border-block-end: var(--borde-capa) solid var(--capa-borde);
+  }
+
+  .titulo {
+    font-size: var(--texto-2xl);
+  }
+
+  .descripcion {
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-md);
+  }
+
+  .datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-3) var(--espacio-6);
+  }
+
+  .datos div {
+    display: grid;
+    gap: var(--espacio-1);
+    align-content: start;
+  }
+
+  dt {
+    color: var(--color-texto-atenuado);
+    font-size: var(--texto-sm);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2);
+  }
+
+  .prerrequisitos {
+    gap: var(--espacio-1) var(--espacio-3);
+  }
+</style>

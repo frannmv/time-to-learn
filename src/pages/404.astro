@@ -1,0 +1,41 @@
+---
+/**
+ * Página 404. GitHub Pages la sirve para cualquier ruta inexistente del sitio, así que todos
+ * sus enlaces son absolutos (con el `base`).
+ */
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { ruta } from '../lib/navegacion';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<SiteLayout titulo="Página no encontrada" noindex>
+  <div class="no-encontrada">
+    <h1>Página no encontrada</h1>
+    <p>
+      Este paquete no llegó a destino: la dirección no corresponde a ninguna página del sitio. Puede
+      que el enlace esté mal escrito o que la página se haya movido.
+    </p>
+    <ul>
+      <li>
+        <a href={ruta(base)}>Ir al inicio</a>
+      </li>
+      <li>
+        <a href={ruta(base, 'capas/')}>Ver los módulos por capa</a>
+      </li>
+    </ul>
+  </div>
+</SiteLayout>
+
+<style>
+  .no-encontrada {
+    max-inline-size: var(--ancho-lectura);
+    display: grid;
+    gap: var(--espacio-4);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--espacio-2);
+  }
+</style>

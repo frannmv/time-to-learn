@@ -1,0 +1,112 @@
+---
+/**
+ * Navegación por capa: los módulos visibles agrupados por capa del modelo OSI, de la 1 a la 7.
+ * Un módulo aparece en cada capa que toca; se indica cuál es su capa principal.
+ */
+import SiteLayout from '../layouts/SiteLayout.astro';
+import LayerBadge from '../components/learn/LayerBadge.astro';
+import { NOMBRE_CAPA } from '../engine/core/capas';
+import { obtenerModulos } from '../lib/modulos';
+import { agruparPorCapa, rutaModulo } from '../lib/navegacion';
+
+const base = import.meta.env.BASE_URL;
+const grupos = agruparPorCapa(await obtenerModulos());
+---
+
+<SiteLayout titulo="Módulos por capa" descripcion="Los módulos agrupados por capa del modelo OSI.">
+  <div class="capas">
+    <header>
+      <h1>Módulos por capa</h1>
+      <p class="atenuado">
+        Las siete capas del modelo de referencia OSI (ISO/IEC 7498-1), de la física a la de
+        aplicación, con los módulos que tocan cada una.
+      </p>
+    </header>
+
+    <ol class="lista-capas">
+      {grupos.map(({ capa, modulos }) => (
+        <li>
+          <section aria-labelledby={`capa-${capa}`} class="capa" data-capa={capa}>
+            <h2 id={`capa-${capa}`}>
+              Capa {capa} · {NOMBRE_CAPA[capa]}
+            </h2>
+            {modulos.length === 0 ? (
+              <p class="atenuado">Sin módulos todavía.</p>
+            ) : (
+              <ul>
+                {modulos.map(({ modulo, principal }) => (
+                  <li>
+                    <a href={rutaModulo(base, modulo.id)}>{modulo.data.titulo}</a>
+                    {principal ? (
+                      <span class="atenuado"> · capa principal</span>
+                    ) : (
+                      modulo.data.capas[0] !== undefined && (
+                        <span class="atenuado">
+                          {' · principal: '}
+                          <LayerBadge capa={modulo.data.capas[0]} />
+                        </span>
+                      )
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </li>
+      ))}
+    </ol>
+  </div>
+</SiteLayout>
+
+<style>
+  .capas {
+    max-inline-size: var(--ancho-lectura);
+    display: grid;
+    gap: var(--espacio-5);
+  }
+
+  header {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  .atenuado {
+    color: var(--color-texto-atenuado);
+  }
+
+  ol,
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .lista-capas {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  .capa {
+    display: grid;
+    gap: var(--espacio-2);
+    padding: var(--espacio-3) var(--espacio-4);
+    background-color: var(--capa-fondo);
+    border: var(--borde-fino) solid var(--capa-borde);
+    border-inline-start-width: var(--borde-capa);
+    border-radius: var(--radio-medio);
+  }
+
+  h2 {
+    color: var(--capa-borde);
+    font-size: var(--texto-lg);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--espacio-1);
+  }
+
+  /* Sobre el fondo de la capa, los enlaces usan el color de texto (contraste declarado). */
+  .capa a {
+    color: var(--color-texto);
+  }
+</style>
