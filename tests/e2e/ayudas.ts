@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /** Reglas de axe que se exigen: WCAG 2.0, 2.1 y 2.2, niveles A y AA. */
 const ETIQUETAS_WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -19,6 +19,20 @@ export async function revisarAccesibilidad(page: Page, incluir?: string): Promis
     nodos: v.nodes.map((n) => n.target.join(' ')),
   }));
   expect(resumen).toEqual([]);
+}
+
+/**
+ * Lleva cada isla de la página a la vista y espera a que se hidrate: con `client:visible`,
+ * Astro le quita el atributo `ssr` a `astro-island` al terminar. Vuelve arriba al final.
+ */
+export async function hidratarTodas(page: Page): Promise<Locator> {
+  const islas = page.locator('astro-island');
+  for (const isla of await islas.all()) {
+    await isla.scrollIntoViewIfNeeded();
+    await expect(isla).not.toHaveAttribute('ssr');
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  return islas;
 }
 
 /** Verifica que la página no se desplace en horizontal. */
