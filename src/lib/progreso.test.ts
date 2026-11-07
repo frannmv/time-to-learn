@@ -7,6 +7,7 @@ import {
   leerProgreso,
   leerProgresoCrudo,
   registrarResultado,
+  reiniciarProgreso,
   suscribirProgreso,
   type Almacen,
   type DetalleProgreso,
@@ -21,6 +22,7 @@ function almacenFalso(
     datos,
     getItem: (clave) => datos.get(clave) ?? null,
     setItem: (clave, valor) => void datos.set(clave, valor),
+    removeItem: (clave) => void datos.delete(clave),
   };
 }
 
@@ -31,6 +33,9 @@ const almacenQueFalla: Almacen = {
   },
   setItem: () => {
     throw new DOMException('Sin espacio', 'QuotaExceededError');
+  },
+  removeItem: () => {
+    throw new DOMException('Bloqueado', 'SecurityError');
   },
 };
 
@@ -192,6 +197,45 @@ describe('registrarResultado', () => {
 
     expect(escuchar).toHaveBeenCalledOnce();
     expect(escuchar.mock.results[0]?.value).toEqual(detalle);
+  });
+});
+
+describe('reiniciarProgreso', () => {
+  it('borra solo la clave del progreso', () => {
+    const almacen = almacenFalso({ 'otra-clave': 'x' });
+    registrarResultado('a', 1, 3, { almacen, ...sinEventos });
+    registrarResultado('b', 3, 3, { almacen, ...sinEventos });
+
+    expect(reiniciarProgreso({ almacen, ...sinEventos })).toEqual({
+      moduloId: null,
+      guardado: true,
+      progreso: PROGRESO_VACIO,
+    });
+    expect(almacen.datos.has(CLAVE_PROGRESO)).toBe(false);
+    expect(almacen.datos.get('otra-clave')).toBe('x');
+    expect(leerProgreso(almacen)).toEqual(PROGRESO_VACIO);
+  });
+
+  it('sin nada guardado, no falla', () => {
+    expect(reiniciarProgreso({ almacen: almacenFalso(), ...sinEventos }).guardado).toBe(true);
+  });
+
+  it('si el almacenamiento falla o no existe, no lanza y avisa que no se borró', () => {
+    expect(reiniciarProgreso({ almacen: almacenQueFalla, ...sinEventos }).guardado).toBe(false);
+    expect(reiniciarProgreso({ almacen: null, ...sinEventos }).guardado).toBe(false);
+  });
+
+  it('emite el evento con moduloId null y avisa a los suscriptos', () => {
+    const objetivo = new EventTarget();
+    const escuchar = vi.fn((evento: Event) => (evento as CustomEvent<DetalleProgreso>).detail);
+    objetivo.addEventListener(EVENTO_PROGRESO, escuchar);
+    const alCambiar = vi.fn();
+    suscribirProgreso(alCambiar, objetivo);
+
+    const detalle = reiniciarProgreso({ almacen: almacenFalso(), objetivo });
+
+    expect(escuchar.mock.results[0]?.value).toEqual(detalle);
+    expect(alCambiar).toHaveBeenCalledOnce();
   });
 });
 

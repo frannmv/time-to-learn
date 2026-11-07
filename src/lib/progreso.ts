@@ -11,8 +11,9 @@
  * recordar nada. Los datos guardados que no se entienden (otra versión, JSON roto, valores
  * fuera de rango) se descartan.
  *
- * Cada vez que se registra un resultado se emite el evento {@link EVENTO_PROGRESO}, para que
- * otras islas de la página (el indicador TTL de la pieza 1.9) se enteren sin recargar.
+ * Cada vez que se registra un resultado o se reinicia el progreso se emite el evento
+ * {@link EVENTO_PROGRESO}, para que otras islas de la página (el indicador TTL de la pieza 1.9)
+ * se enteren sin recargar.
  */
 
 /** Versión del formato guardado. Si cambia, cambia también la clave. */
@@ -21,7 +22,10 @@ export const VERSION_PROGRESO = 1;
 /** Clave de `localStorage`, versionada. */
 export const CLAVE_PROGRESO = `ttl:progreso:v${VERSION_PROGRESO}`;
 
-/** Evento (`CustomEvent<DetalleProgreso>`) que se emite en `window` al registrar un resultado. */
+/**
+ * Evento (`CustomEvent<DetalleProgreso>`) que se emite en `window` al registrar un resultado o
+ * al reiniciar el progreso.
+ */
 export const EVENTO_PROGRESO = 'ttl:progreso';
 
 export interface ResultadoModulo {
@@ -39,14 +43,18 @@ export interface Progreso {
 }
 
 export interface DetalleProgreso {
-  readonly moduloId: string;
+  /** Módulo cuyo resultado se registró, o `null` si se reinició todo el progreso. */
+  readonly moduloId: string | null;
   readonly progreso: Progreso;
-  /** `false` si no se pudo guardar (el progreso vale solo hasta recargar). */
+  /**
+   * `false` si no se pudo guardar (el progreso vale solo hasta recargar) o, al reiniciar, si no
+   * se pudo borrar lo guardado.
+   */
   readonly guardado: boolean;
 }
 
 /** Lo mínimo que se usa de `Storage`; los tests pasan uno falso. */
-export type Almacen = Pick<Storage, 'getItem' | 'setItem'>;
+export type Almacen = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 /** Destino de los eventos; en el navegador es `window`. */
 export type Objetivo = Pick<
@@ -179,8 +187,31 @@ export function registrarResultado(
 }
 
 /**
- * Llama a `alCambiar` cuando cambia el progreso: al registrar un resultado en esta pestaña
- * ({@link EVENTO_PROGRESO}) o en otra (evento `storage`). Devuelve la función que cancela la
+ * Borra todo el progreso guardado (pide confirmación quien la llama). Emite
+ * {@link EVENTO_PROGRESO} con `moduloId: null`, aunque no se haya podido borrar.
+ */
+export function reiniciarProgreso({
+  almacen = almacenDelNavegador(),
+  objetivo = objetivoDelNavegador(),
+}: Opciones = {}): DetalleProgreso {
+  let guardado = false;
+  if (almacen) {
+    try {
+      almacen.removeItem(CLAVE_PROGRESO);
+      guardado = true;
+    } catch {
+      // Almacenamiento bloqueado: no había nada que recordar.
+    }
+  }
+
+  const detalle: DetalleProgreso = { moduloId: null, progreso: PROGRESO_VACIO, guardado };
+  objetivo?.dispatchEvent(new CustomEvent<DetalleProgreso>(EVENTO_PROGRESO, { detail: detalle }));
+  return detalle;
+}
+
+/**
+ * Llama a `alCambiar` cuando cambia el progreso: al registrar un resultado o reiniciar en esta
+ * pestaña ({@link EVENTO_PROGRESO}) o en otra (evento `storage`). Devuelve la función que cancela la
  * suscripción. Sirve para `useSyncExternalStore`, junto con {@link leerProgresoCrudo}.
  */
 export function suscribirProgreso(
