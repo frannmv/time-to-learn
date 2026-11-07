@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { longitudTotal, partesEnElCable } from '../core/pdu';
 import { validarTimeline } from '../core/timeline';
-import { ESCENARIO_DEMO, simularDemo } from './escenario';
+import { BYTES_COLA_DEMO, BYTES_ENCABEZADO_DEMO, ESCENARIO_DEMO, simularDemo } from './escenario';
 
 describe('escenario de demostración (ficticio)', () => {
   it('es determinístico: dos ejecuciones producen la misma timeline', () => {
@@ -8,13 +10,22 @@ describe('escenario de demostración (ficticio)', () => {
     expect(JSON.stringify(simularDemo())).toBe(JSON.stringify(simularDemo()));
   });
 
-  it('produce una timeline válida de cinco pasos', () => {
+  it('produce una timeline válida de seis pasos', () => {
     const timeline = simularDemo();
     expect(validarTimeline(timeline)).toEqual([]);
-    expect(timeline.pasos).toHaveLength(5);
+    expect(timeline.pasos).toHaveLength(6);
   });
 
-  it('el mensaje va de A a C pasando por B', () => {
+  // Así, el test de arriba cubre las timelines de /demo/ y del módulo de ejemplo.
+  it('/demo/ y el módulo de ejemplo usan esta misma timeline', () => {
+    for (const archivo of ['../../pages/demo.astro', '../../content/modules/ejemplo.mdx']) {
+      const texto = readFileSync(new URL(archivo, import.meta.url), 'utf8');
+      expect(texto, archivo).toMatch(/simularDemo\(\)/);
+      expect(texto, archivo).not.toMatch(/simularDemo\([^)]/);
+    }
+  });
+
+  it('el mensaje va de A a C pasando por B y termina en la capa 7 de C', () => {
     const ubicaciones = simularDemo().pasos.map((paso) => paso.paquetes[0]?.ubicacion);
     expect(ubicaciones).toEqual([
       { tipo: 'nodo', nodo: 'a' },
@@ -22,7 +33,40 @@ describe('escenario de demostración (ficticio)', () => {
       { tipo: 'nodo', nodo: 'b' },
       { tipo: 'enlace', enlace: 'b-c', desde: 'b', hacia: 'c' },
       { tipo: 'nodo', nodo: 'c' },
+      { tipo: 'nodo', nodo: 'c', capa: 7 },
     ]);
+  });
+
+  it('los primeros cinco pasos no tienen tamaños, colas ni PDU', () => {
+    for (const paso of simularDemo().pasos.slice(0, 5)) {
+      const [paquete] = paso.paquetes;
+      expect(paquete).not.toHaveProperty('pdu');
+      expect(paquete).not.toHaveProperty('datos');
+      for (const e of paquete?.encabezados ?? []) {
+        expect(e).not.toHaveProperty('bytes');
+        expect(e).not.toHaveProperty('parte');
+      }
+    }
+  });
+
+  it('el último paso mide el mensaje parte por parte, con una cola', () => {
+    const paquete = simularDemo().pasos[5]?.paquetes[0];
+    if (paquete === undefined) throw new Error('el último paso no tiene paquete');
+    expect(paquete.pdu).toBe('Mensaje de juguete');
+    expect(partesEnElCable(paquete).map((p) => [p.tipo, p.bytes, p.desplazamiento])).toEqual([
+      ['encabezado', BYTES_ENCABEZADO_DEMO, 0],
+      ['datos', 7, BYTES_ENCABEZADO_DEMO],
+      ['cola', BYTES_COLA_DEMO, BYTES_ENCABEZADO_DEMO + 7],
+    ]);
+    expect(longitudTotal(paquete)).toBe(BYTES_ENCABEZADO_DEMO + 7 + BYTES_COLA_DEMO);
+    expect(paquete.encabezados[1]?.nombre).toMatch(/ficticio/);
+    expect(simularDemo().pasos[5]?.explicacion).toMatch(/ficticios/);
+  });
+
+  it('los datos miden lo que mide el texto en UTF-8', () => {
+    // «Señal» tiene 5 caracteres y 6 bytes: la «ñ» ocupa dos.
+    const paquete = simularDemo({ ...ESCENARIO_DEMO, mensaje: 'Señal' }).pasos[5]?.paquetes[0];
+    expect(paquete?.datos).toEqual({ descripcion: 'Señal', bytes: 6 });
   });
 
   it('B anota una fila nueva al recibir el mensaje y después deja de marcarla', () => {
