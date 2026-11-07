@@ -12,6 +12,30 @@ fuentes:
     titulo: Computing the Internet Checksum
     seccion: §1 (cálculo y verificación) y §3 (ejemplo numérico)
     url: https://www.rfc-editor.org/rfc/rfc1071
+  - tipo: rfc
+    id: RFC 791
+    titulo: Internet Protocol
+    seccion: §3.1 (formato del encabezado)
+    url: https://www.rfc-editor.org/rfc/rfc791
+  - tipo: rfc
+    id: RFC 2474
+    titulo: Definition of the Differentiated Services Field (DS Field) in the IPv4 and IPv6 Headers
+    seccion: §3
+    url: https://www.rfc-editor.org/rfc/rfc2474
+  - tipo: rfc
+    id: RFC 3168
+    titulo: The Addition of Explicit Congestion Notification (ECN) to IP
+    seccion: §5
+    url: https://www.rfc-editor.org/rfc/rfc3168
+  - tipo: rfc
+    id: RFC 5737
+    titulo: IPv4 Address Blocks Reserved for Documentation
+    seccion: §3
+    url: https://www.rfc-editor.org/rfc/rfc5737
+  - tipo: estandar
+    id: IANA
+    titulo: Assigned Internet Protocol Numbers
+    url: https://www.iana.org/assignments/protocol-numbers/
 quiz:
   - pregunta: '[Ejemplo] ¿Sobre qué unidades suma el checksum de Internet?'
     opciones:
@@ -38,10 +62,14 @@ quiz:
 
 import Callout from '../../components/learn/Callout.astro';
 import WhatIf from '../../components/learn/WhatIf.astro';
+import Simulation from '../../components/sim/Simulation';
+import HeaderFormat from '../../components/headers/HeaderFormat';
+import { simularDemo } from '../../engine/demo/escenario';
+import { ENCABEZADO_IPV4 } from '../../engine/demo/encabezado-ipv4';
 
 {/* Módulo de ejemplo oculto (decisión transversal 9 del plan de la Etapa 1). */}
 {/* Se genera su página pero no aparece en el índice, la navegación ni el progreso. */}
-{/* Cada sección indica qué componente la va a dibujar; las piezas siguientes los reemplazan. */}
+{/* Usa todos los componentes de la plantilla; la simulación y el encabezado son los de /demo/. */}
 
 > **Texto de ejemplo.** Este módulo sirve para probar la plantilla. Su contenido no forma
 > parte del material de estudio.
@@ -60,15 +88,28 @@ complemento a uno de esa suma (RFC 1071 §1).
 
 ## Simulación
 
-{/* Topology + StepControls + StateTable (piezas 1.5 y 1.6). */}
+_Ejemplo._ Esta es la simulación de la página de demostración: un escenario ficticio de tres
+nodos (A, B y C) que no representa ningún protocolo y no calcula checksums. Está acá para
+probar la plantilla.
 
-_Ejemplo._ Acá va la simulación paso a paso del módulo.
+<Simulation
+  client:visible
+  timeline={simularDemo()}
+  titulo="Simulación de ejemplo"
+  vistas={['topologia', 'tablas']}
+/>
 
 ## Formato
 
-{/* HeaderFormat (pieza 1.7). */}
+_Ejemplo._ El encabezado IPv4 lleva un checksum de Internet calculado sobre sus 20 bytes
+(RFC 791 §3.1). Elegí el campo «Checksum del encabezado» para ver su valor, calculado con el
+mismo algoritmo de RFC 1071.
 
-_Ejemplo._ Acá va el formato del encabezado, campo por campo y con sus bits.
+<HeaderFormat client:visible encabezado={ENCABEZADO_IPV4} />
+
+<Callout variante="simplificacion">
+  _Ejemplo._ El encabezado no tiene opciones (IHL vale 5) y no muestra los datos que lo siguen.
+</Callout>
 
 ## ¿Qué pasa si…?
 

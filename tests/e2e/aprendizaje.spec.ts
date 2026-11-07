@@ -258,13 +258,38 @@ test.describe('módulo de ejemplo: quiz, qué pasa si y resumen', () => {
     await expect(
       page.getByRole('heading', { level: 3, name: '¿Qué pasa si la cantidad de bytes es impar?' }),
     ).toBeVisible();
-    await expect(page.getByRole('note').filter({ hasText: 'Simplificación' })).toBeVisible();
+    await expect(page.getByRole('note').filter({ hasText: 'Simplificación' })).toHaveCount(2);
     const resumen = page.getByRole('note').filter({ hasText: 'Para repasar' });
     await expect(resumen.getByRole('listitem')).toHaveCount(3);
     await expect(resumen).toContainText('220D');
-    // La única isla de la página es el quiz.
-    await expect(page.locator('astro-island')).toHaveCount(1);
-    await expect(page.locator('astro-island')).toHaveAttribute('component-url', /Quiz/);
+    // Las únicas islas son la simulación, el formato y el quiz: WhatIf y Callout no suman.
+    const islas = page.locator('astro-island');
+    await expect(islas).toHaveCount(3);
+    for (const [i, componente] of ['Simulation', 'HeaderFormat', 'Quiz'].entries()) {
+      await expect(islas.nth(i)).toHaveAttribute('component-url', new RegExp(componente));
+    }
+  });
+
+  test('arma la plantilla completa con los componentes compartidos', async ({ page }) => {
+    const titulos = await page.locator('main h2').allTextContents();
+    expect(titulos).toEqual([
+      'Idea central',
+      'Simulación',
+      'Formato',
+      '¿Qué pasa si…?',
+      'Resumen',
+      'Quiz',
+      'Fuentes',
+    ]);
+    const simulacion = page.getByRole('region', { name: 'Simulación de ejemplo' });
+    await simulacion.scrollIntoViewIfNeeded();
+    await expect(page.locator('astro-island[component-url*="Simulation"]')).not.toHaveAttribute(
+      'ssr',
+    );
+    await simulacion.getByRole('button', { name: 'Siguiente' }).click();
+    await expect(simulacion.getByText(/^Paso 2 de \d+$/)).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Encabezado IPv4' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Fuentes' })).toContainText('RFC 791');
   });
 
   test('la página es accesible y no desborda', async ({ page }) => {
