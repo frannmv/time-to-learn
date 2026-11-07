@@ -18,6 +18,8 @@ import { CAPAS, NOMBRE_CAPA } from '../engine/core/capas';
 import { obtenerModulos, obtenerTodosLosModulos } from '../lib/modulos';
 import Simulation from '../components/sim/Simulation';
 import { simularDemo } from '../engine/demo/escenario';
+import Pdu from '../components/sim/Pdu';
+import { simularPilaDemo } from '../engine/demo/pila';
 import HeaderFormat from '../components/headers/HeaderFormat';
 import { ENCABEZADO_IPV4 } from '../engine/demo/encabezado-ipv4';
 
@@ -56,6 +58,11 @@ const visibles = await obtenerModulos();
 
 // Piezas 1.5 y 1.6: la línea de tiempo se calcula en el build y llega como props a la isla.
 const timelineDemo = simularDemo();
+
+// Pieza 2.3: escenario ficticio propio para la vista de pila y una PDU estática (sin isla).
+const timelinePila = simularPilaDemo();
+const tramaPila = timelinePila.pasos[2]?.paquetes[0];
+if (tramaPila === undefined) throw new Error('El escenario de la pila no tiene la trama de A.');
 
 // Pieza 1.8: preguntas sobre el escenario ficticio de la simulación de demostración. El id
 // «demo» no es un módulo real; la pieza 1.9 lo usa para probar el indicador de progreso.
@@ -239,6 +246,31 @@ const recorridoDemo: ModuloRecorrido[] = [
         titulo="Simulación de demostración"
         vistas={['topologia', 'tablas']}
       />
+    </section>
+
+    <section aria-labelledby="pila">
+      <h2 id="pila">Pila de protocolos</h2>
+      <p class="atenuado">
+        Escenario ficticio propio: dos hosts de juguete (A y C) con cuatro capas y un router de
+        juguete (B) con tres. Las capas, los nombres de las partes y de las PDU y los tamaños son
+        inventados («[Ejemplo]»). Al avanzar, la PDU baja por la pila de A, cruza a B, sube hasta su
+        capa 3, vuelve a bajar y sube por la pila de C.
+      </p>
+      <Simulation
+        client:visible
+        timeline={timelinePila}
+        titulo="Simulación de la pila de protocolos"
+        vistas={['pila']}
+      />
+
+      <h3>PDU estática</h3>
+      <p class="atenuado">
+        La misma vista de la PDU, sin JavaScript, con qué bytes ocupa cada parte: la trama de
+        juguete que arma A en su capa 2.
+      </p>
+      <div class="muestra-componente" data-testid="pdu-estatica">
+        <Pdu paquete={tramaPila} desplazamientos />
+      </div>
     </section>
 
     <section aria-labelledby="formato">

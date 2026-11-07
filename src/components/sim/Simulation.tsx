@@ -12,14 +12,19 @@
  */
 import { useEffect, useId, useReducer, type KeyboardEvent } from 'react';
 import type { Timeline } from '../../engine/core/timeline';
+import Pdu from './Pdu';
+import ProtocolStack from './ProtocolStack';
 import StateTable from './StateTable';
 import StepControls from './StepControls';
 import Topology from './Topology';
 import { crearEstado, stepper } from './stepper';
 import estilos from './Simulation.module.css';
 
-/** Vistas que la isla sabe dibujar: el diagrama de la topología y las tablas de estado. */
-export type Vista = 'topologia' | 'tablas';
+/**
+ * Vistas que la isla sabe dibujar: el diagrama de la topología, las tablas de estado y la
+ * pila de protocolos (la pila de cada equipo y, debajo, la PDU del paso parte por parte).
+ */
+export type Vista = 'topologia' | 'tablas' | 'pila';
 
 /** Tiempo que se muestra cada paso durante la reproducción automática. */
 export const INTERVALO_REPRODUCCION_MS = 2000;
@@ -74,10 +79,14 @@ export default function Simulation({ timeline, titulo, vistas = ['topologia', 't
       <StepControls estado={estado} alAccionar={despachar} />
 
       {vistas.includes('topologia') && <Topology timeline={timeline} paso={paso} />}
+      {vistas.includes('pila') && <ProtocolStack timeline={timeline} paso={paso} />}
 
       <p className={estilos.explicacion} aria-live="polite" aria-atomic="true">
         {paso.explicacion}
       </p>
+
+      {vistas.includes('pila') &&
+        paso.paquetes.map((paquete) => <Pdu key={paquete.id} paquete={paquete} />)}
 
       {vistas.includes('tablas') && paso.tablas.length > 0 && (
         <div className={estilos.tablas}>

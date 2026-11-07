@@ -22,12 +22,11 @@ import {
   MEDIDAS,
   NOMBRE_TIPO,
   calcularCaja,
-  duracionEnMs,
-  esAvanceDeUnPaso,
   posicionPaquete,
   posicionesNodos,
   type Punto,
 } from './geometria';
+import { desplazar } from './movimiento';
 import Packet from './Packet';
 import estilos from './Topology.module.css';
 
@@ -116,17 +115,6 @@ function DibujoNodo({ nodo, resaltado }: { readonly nodo: Nodo; readonly resalta
   );
 }
 
-/** Lee la duración y la curva de los tokens (con movimiento reducido, la duración es 0). */
-function leerMovimiento(elemento: Element): { duracion: number; curva: string } {
-  const estilo = getComputedStyle(elemento);
-  return {
-    duracion: duracionEnMs(estilo.getPropertyValue('--duracion-lenta')),
-    curva: estilo.getPropertyValue('--curva-estandar').trim() || 'ease',
-  };
-}
-
-const iguales = (a: Punto, b: Punto) => a.x === b.x && a.y === b.y;
-
 export default function Topology({ timeline, paso }: Props) {
   const idTitulo = useId();
   const idDescripcion = useId();
@@ -148,29 +136,7 @@ export default function Topology({ timeline, paso }: Props) {
   useLayoutEffect(() => {
     const previo = anterior.current;
     anterior.current = { indice: paso.indice, posiciones };
-    const raiz = svg.current;
-    if (raiz === null) return;
-
-    for (const animacion of raiz.getAnimations({ subtree: true })) animacion.cancel();
-    if (previo === null || !esAvanceDeUnPaso(previo.indice, paso.indice)) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const { duracion, curva } = leerMovimiento(raiz);
-    if (duracion <= 0) return;
-
-    for (const elemento of raiz.querySelectorAll<SVGGElement>('[data-paquete]')) {
-      const id = elemento.dataset.paquete ?? '';
-      const desde = previo.posiciones.get(id);
-      const hasta = posiciones.get(id);
-      // Un paquete que recién aparece no viene de ningún lado: se muestra sin moverse.
-      if (desde === undefined || hasta === undefined || iguales(desde, hasta)) continue;
-      elemento.animate(
-        [
-          { transform: `translate(${desde.x}px, ${desde.y}px)` },
-          { transform: `translate(${hasta.x}px, ${hasta.y}px)` },
-        ],
-        { duration: duracion, easing: curva },
-      );
-    }
+    if (svg.current !== null) desplazar(svg.current, 'paquete', previo, anterior.current);
   }, [paso.indice, posiciones]);
 
   // El ancho del viewBox llega al CSS para calcular el ancho mínimo legible.

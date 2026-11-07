@@ -5,7 +5,7 @@
  */
 import { NOMBRE_CAPA } from '../../engine/core/capas';
 import { partesEnElCable } from '../../engine/core/pdu';
-import type { Paquete, Step, Topologia } from '../../engine/core/timeline';
+import type { Nodo, Paquete, Step, Topologia } from '../../engine/core/timeline';
 import { NOMBRE_TIPO } from './geometria';
 
 /** Une una lista en español: «A», «A y B», «A, B y C». */
@@ -66,4 +66,50 @@ export function describirPaquete(paquete: Paquete, topologia: Topologia): string
 export function describirPaso(paso: Step, topologia: Topologia): string {
   if (paso.paquetes.length === 0) return 'No hay paquetes en este paso.';
   return paso.paquetes.map((p) => describirPaquete(p, topologia)).join(' ');
+}
+
+// ---------------------------------------------------------------------------------------
+// Vista de pila
+// ---------------------------------------------------------------------------------------
+
+/** «capa 1», «capas 1 a 4» o, si hay huecos, «capas 1, 2 y 4». */
+export function describirCapas(capas: readonly number[]): string {
+  if (capas.length === 1) return `capa ${capas[0]}`;
+  const contiguas = capas.every((c, i) => i === 0 || c === (capas[i - 1] ?? c) + 1);
+  return contiguas ? `capas ${capas[0]} a ${capas.at(-1)}` : `capas ${enumerar(capas.map(String))}`;
+}
+
+/**
+ * «Pila de cada equipo: A (host), capas 1 a 7; B (router), capas 1 a 3.» Los equipos van
+ * en el orden en que se recibe la lista (el de las columnas del diagrama).
+ */
+export function describirPilas(nodos: readonly Nodo[]): string {
+  if (nodos.length === 0) return 'Sin equipos.';
+  const pilas = nodos.map((n) => {
+    const equipo = `${n.etiqueta} (${NOMBRE_TIPO[n.tipo].toLowerCase()})`;
+    const capas = n.capas ?? [];
+    return `${equipo}, ${capas.length > 0 ? describirCapas(capas) : 'sin pila declarada'}`;
+  });
+  return `Pila de cada equipo: ${pilas.join('; ')}.`;
+}
+
+/**
+ * Dónde está la PDU en la pila: «Trama Ethernet en la capa 2 (Enlace de datos) de A.»,
+ * «Bits sobre el enlace de A hacia B.» o «PDU en A.» si el paso no dice la capa.
+ */
+export function describirPduEnPila(paquete: Paquete, topologia: Topologia): string {
+  const etiqueta = (id: string) => topologia.nodos.find((n) => n.id === id)?.etiqueta ?? id;
+  const nombre = paquete.pdu ?? 'PDU';
+  const { ubicacion } = paquete;
+  if (ubicacion.tipo === 'enlace') {
+    return `${nombre} sobre el enlace de ${etiqueta(ubicacion.desde)} hacia ${etiqueta(ubicacion.hacia)}.`;
+  }
+  if (ubicacion.capa === undefined) return `${nombre} en ${etiqueta(ubicacion.nodo)}.`;
+  return `${nombre} en la capa ${ubicacion.capa} (${NOMBRE_CAPA[ubicacion.capa]}) de ${etiqueta(ubicacion.nodo)}.`;
+}
+
+/** Describe dónde está cada PDU del paso, en la vista de pila. */
+export function describirPasoEnPila(paso: Step, topologia: Topologia): string {
+  if (paso.paquetes.length === 0) return 'No hay PDU en este paso.';
+  return paso.paquetes.map((p) => describirPduEnPila(p, topologia)).join(' ');
 }
